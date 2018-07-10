@@ -8,6 +8,14 @@ These codes are licensed under CC0.
 <br/>
 <br/>
 
+# How the system works  
+1. User send message to Jullie facebook page account in Messenger app.
+2. Message will be sent to webhook(endpoint of heroku app) via facebook api.
+3. At endpoint of heroku that is described in app.py, the message will be saved to database 'messages' table.
+4. Chatbot will wait for 20 seconds to reply after user's last message so that users can finish telling all what they want to say.
+5. In message_observer.py, 
+
+
 # Instruction
 #### 1.Make an app on Heroku
 
