@@ -5,6 +5,10 @@ import requests
 import os
 from requests_toolbelt import MultipartEncoder
 
+_send_msg_to_messenger_err_msg = '''
+This typically means that you failed to send any type of msg to messenger. To solve this, check if graph_url and acess_token are updated.
+'''
+
 graph_url = 'https://graph.facebook.com/v2.6/me/messages'
 
 access_token = str(os.environ.get("PAGE_ACCESS_TOKEN", None))
@@ -45,7 +49,7 @@ def mark_seen(sender_id):
         requests.post(graph_url, params=params, headers=headers, data=data)
 
     except Exception:
-        logging.exception('Error at: ' + str(__name__))
+        logging.exception(_send_msg_to_messenger_err_msg)
 
 
 def send_message(sender_id, content):
@@ -93,7 +97,7 @@ def send_message(sender_id, content):
             })
             requests.post(graph_url, params=params, headers=headers, data=data)
     except Exception:
-        logging.exception('Error at: ' + str(__name__))
+        logging.exception(_send_msg_to_messenger_err_msg)
 
 
 def send_typing_on(sender_id):
@@ -113,7 +117,7 @@ def send_typing_on(sender_id):
 
         requests.post(graph_url, params=params, headers=headers, data=data)
     except:
-        logging.exception('')
+        logging.exception(_send_msg_to_messenger_err_msg)
 
 
 def send_typing_off(sender_id):
@@ -132,7 +136,7 @@ def send_typing_off(sender_id):
         })
         requests.post(graph_url, params=params, headers=headers, data=data)
     except Exception:
-        logging.exception('Error at: ' + str(__name__))
+        logging.exception(_send_msg_to_messenger_err_msg)
 
 
 def send_quick_replies(sender_id, quick_replies_title, quick_replies, payload='DEFAULT'):
@@ -166,7 +170,7 @@ def send_quick_replies(sender_id, quick_replies_title, quick_replies, payload='D
         })
         requests.post(graph_url, params=params, headers=headers, data=data)
     except:
-        logging.exception('')
+        logging.exception(_send_msg_to_messenger_err_msg)
 
 
 def deduplicate_preserving_order(original_list):

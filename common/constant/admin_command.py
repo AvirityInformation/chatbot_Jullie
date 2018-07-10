@@ -1,6 +1,6 @@
 from enum import Enum
 
-
+# Change user status by sending messages below on messenger
 class AdminCommand(Enum):
     RESTART_INTRODUCTION = "RESTART_INTRODUCTION"
     SEND_FIRST_TIME_REMIND = "SEND_FIRST_TIME_REMIND"

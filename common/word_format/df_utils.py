@@ -7,7 +7,7 @@ import logging
 class UnknownError:
     pass
 
-
+# util class for treaing data frame
 class Df_util(object):
 
     @staticmethod
@@ -29,7 +29,6 @@ class Df_util(object):
                     pass
         return False
 
-    # word1のidxとword2のidxで続きになってるものを発見し、続きになっているword1のidxをリストで返す
     @staticmethod
     def make_pair_words_idx_list(word1_idx_list, word2_idx_list):
         return list(set(word1_idx_list) & set(list(map(lambda x: x - 1, word2_idx_list))))
@@ -38,7 +37,7 @@ class Df_util(object):
     def nothing_isin(word_list, series):
         return all(series.isin(word_list) == False)
 
-
+# util class for NLP
 class Nlp_util(object):
     pos_NOUNs = ["NN", "NNS", "NNP", "NNPS"]
     pos_PRPs = ["PRP"]
@@ -52,7 +51,6 @@ class Nlp_util(object):
     CAN_TYPE = ["Can", "Could", "Cant", "Couldnt", "can", "could", "cant", "couldnt"]
     THINK_TYPE = ["think", "feel", "consider", "thought", "felt", "considered"]
     IDEA_TYPE = ["idea", "opinion", "suggestion", "clue", "solution", "advice"]
-    # what would be goodなど主語の無いタイプにつく可能性がある単語
     SP_TYPE1 = ["good", "better", "best", "next", "step"]
     SP_TYPE2 = ["like", "love"]
     INDICATE_OTHERS = ["everyone", "everybody", "guy","girl", "anyone", "boy", "man", "buddy","friend"]
@@ -135,33 +133,28 @@ class Nlp_util(object):
 
     @staticmethod
     def cut_end_symbol_df(df):
-        try:
+        if len(df) == 0:
+            return df
+        else:
             while all(not word.isalpha() for word in df.iloc[-1]["word"]):
                 df = df[:-1]
                 if len(df) == 0:
                     return df
             return df
-        except:
-            logging.exception('')
-            return df
 
 
     @staticmethod
     def cut_unnecessary_words(df):
-        try:
-            # df = df.drop(len(df) - 1) if Nlp_util.is_last_word({"?","."}, df) else df
-            df = Nlp_util.cut_end_symbol_df(df)
-            if len(df) == 0:
-                return df
-            elif len(Nlp_util.make_noun_list(df)) < 2:
-                return df
-            elif df.iloc[-2:]["word"].iloc[0] in Nlp_util.DO_TYPE + Nlp_util.BE_TYPE and df.iloc[-2:]["pos"].iloc[
-                1] == "PRP":
-                return df.iloc[:-2] if not df.iloc[-3]["word"] == "," else df.iloc[:-3]
-            else:
-                return df
-        except:
-            logging.exception('')
+        # df = df.drop(len(df) - 1) if Nlp_util.is_last_word({"?","."}, df) else df
+        df = Nlp_util.cut_end_symbol_df(df)
+        if len(df) == 0:
+            return df
+        elif len(Nlp_util.make_noun_list(df)) < 2:
+            return df
+        elif df.iloc[-2:]["word"].iloc[0] in Nlp_util.DO_TYPE + Nlp_util.BE_TYPE and df.iloc[-2:]["pos"].iloc[
+            1] == "PRP":
+            return df.iloc[:-2] if not df.iloc[-3]["word"] == "," else df.iloc[:-3]
+        else:
             return df
 
     @staticmethod
@@ -233,7 +226,6 @@ class Nlp_util(object):
     @staticmethod
     def change_verb_form(subject, verb, verb_pos):
         verb_original_form = Word(verb).lemmatize("v")
-        # be動詞かどうか
         if verb in {"be", "am", "are", "is", "was", "were"}:
             if verb_pos in {"VBD", "VBN"}:
                 if subject in {"you", "they", "we"}:
@@ -250,14 +242,11 @@ class Nlp_util(object):
 
         else:
             if verb_pos in {"VBD", "VBN"}:
-                # 普通の動詞で過去形だった場合そのまま返す！
                 verb_suited_form_to_subject = verb
             else:
                 if subject in {"i", "you", "they", "we", "you guys"}:
-                    # 主語が上記で動詞がbe動詞でも無く過去形でもない場合はその動詞の原型がv2
                     verb_suited_form_to_subject = verb
                 else:
-                    # 主語がsheとかの場合、一旦原型に戻したものを複数形にして返す
                     if verb in {"have"}:
                         verb_suited_form_to_subject = "has"
                     else:
@@ -341,6 +330,7 @@ class Nlp_util(object):
             return False
         else:
             return True
+
 
     @staticmethod
     def are_words1_words2_words3_in_order(df, words1_list, words2_list, words3_list=[], df_column="base_form", exception_list=[]):
@@ -450,10 +440,9 @@ class Nlp_util(object):
 
     @staticmethod
     def is_last_word(word_list, df, column_name="word"):
-        try:
+        if len(df) != 0:
             return df.iloc[len(df) - 1][column_name] in word_list
-        except:
-            logging.exception('')
+        else:
             return False
 
 
@@ -525,9 +514,7 @@ class Nlp_util(object):
         dic = {'have to': 'MD', 'has to': 'MD', 'had to': 'MD'}
         have_idx_list = Nlp_util.make_idx_list_by(["have", "had", "has"], df)
         to_idx_list = Nlp_util.make_idx_list_by(["to"], df)
-        # haveとtoが続く組み合わせを発見し、そのhaveの方のindexをとる。
         haveto_idx_list = Df_util.make_pair_words_idx_list(have_idx_list, to_idx_list)
-        # haveとtoを合わせた１行を作り、その後indexを合わせた
         merged_df = Nlp_util.merge_pair_words_in(df, haveto_idx_list).reset_index(drop=True)
         fixed_df = Nlp_util.change_pos_of_word(merged_df, dic)
         return fixed_df
@@ -569,7 +556,8 @@ class Nlp_util(object):
     def make_verb_list(df, tag_column="pos", type="question"):
         noun_list = Nlp_util.make_noun_list(df)
         verb_list = df[df[tag_column].isin(Nlp_util.pos_VERBs)]
-        # do youのdoは動詞とみなしたくない
+
+        # to avoid getting 'Do' of Do you do as Verb
         if type == "question" and len(noun_list) != 0 and Df_util.anything_isin(Nlp_util.DO_TYPE, df.loc[:noun_list.index[0], "word"]):
             first_do_type_idx = df[df.loc[:, "word"].isin(Nlp_util.DO_TYPE)].index[0]
             return verb_list.drop(first_do_type_idx)

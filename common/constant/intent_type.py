@@ -1,6 +1,6 @@
 from enum import Enum
 
-
+# all intents detected in intent checker
 class Intent(Enum):
     NORMAL = 'normal'
     NOT_LISTENING = 'not_listening'

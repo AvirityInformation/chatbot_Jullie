@@ -4,7 +4,7 @@ OQD = opened question detail OYS = on your side OQFL = open question feeling, LI
 """
 from enum import Enum
 
-
+# all message types detected in message checker
 class MessageType(Enum):
     INTRO = '0'
 

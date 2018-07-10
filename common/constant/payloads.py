@@ -1,6 +1,6 @@
 from enum import Enum
 
-
+# TODO Will be deleted once app.py get changed not to use payload
 class Payload(Enum):
     MESSAGE_WITHOUT_BUTTON_IN_INTRO = 'MESSAGE_WITHOUT_BUTTON_IN_INTRO_PAYLOAD'
 
