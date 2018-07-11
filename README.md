@@ -12,18 +12,18 @@ These codes are licensed under CC0.
 1. User send message to Jullie facebook page account in Messenger app.
 2. Message will be sent to webhook(endpoint of heroku app) via facebook api.
 3. At endpoint of heroku that is described in app.py, the message will be saved to database 'messages' table.
-4. Chatbot will wait for 20 seconds to reply after user's last message so that users can finish telling all what they want to say.
-5. In message_observer.py, 
+4. Chatbot will wait for 20 seconds to reply after user's last message so that users can finish sending all what they want to say.
+5. In message_observer.py, fetch_regularly() method finds messages sent more than 20 seconds ago and put them into queue with main() method in main.py
+6. worker.py is listening to the queue so when task is in the queue, worker will execute main() function.
+7. In the main() function, instances of Message, User and TherapySession class will be created and BotFactory create a bot that handle those instances to generate responses to user.
+8. After creating responses, bot sends them to user via facebook api. 
 
 
 # Instruction
 #### 1.Make an app on Heroku
 
 
-#### 2.Make a facebook page and get page access token and verify token from facebook developer page. (Replace xxx with app name and ooo with keys or tokens)
-Set these tokens as heroku env var.
-1. page_aceess_token
-2. verify_token   
+#### 2.Make a facebook page and get page access token and verify token from facebook developer page. Set these tokens as heroku env var(Replace xxx with app name and ooo with keys or tokens)
 
 heroku config:set PAGE_ACCESS_TOKEN=ooo -a xxx    
 heroku config:set VERIFY_TOKEN=ooo -a xxx
@@ -32,7 +32,7 @@ heroku config:set VERIFY_TOKEN=ooo -a xxx
 
 heroku buildpacks:add heroku/jvm -a xxx  
 
-#### 4.Then create an agent on https://dialogflow.com and set its api keys to heroku env vars.    
+#### 4.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
 heroku config:set client_access_token=ooo -a xxx    
 heroku config:set session_id=ooo -a xxx  
 
@@ -40,22 +40,10 @@ heroku config:set session_id=ooo -a xxx
 heroku addons:create heroku-postgresql:hobby-dev -a xxx  
 heroku addons:create redistogo:nano -a xxx
 
-##### 6.check secret keys
-Set 
+##### 6.check secret keys with heroku config -a xxx
 1. database_url
-2. redistogo_url
+2. redistogo_url      
 
-to heroku env variables.      
-
-##### 7.Prepare database.
-**install psql with pip if first time**  
-pip install psql
-
-**on new db, execute following commands**  
-heroku pg:psql -a xxx
-
-#### 8.Run the app
-On your console, execute following commands  
-**python worker.py**  
-**python clock.py**  
-**python app.py**
+#### 7.Push something to heroku and start dynos.
+Don't forget to start three dynos to run all the programs required.
+web, worker and clock
