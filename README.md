@@ -13,7 +13,10 @@ These codes are licensed under CC0.
 2. Message will be sent to webhook(endpoint of heroku app) via facebook api.
 3. At endpoint of heroku that is described in app.py, the message will be saved to database 'messages' table.
 4. Chatbot will wait for 20 seconds to reply after user's last message so that users can finish telling all what they want to say.
-5. In message_observer.py, 
+5. In message_observer.py,　fetch_regularly() method finds messages sent more than 20 seconds ago and put them into queue with main() method in main.py
+6. worker.py is listening the queue so when task is in the queue, worker will execute main() function.
+7. In the main() function, instances of Message, User, TherapySession class will be created and BotFactory create a bot that handle those instances to generate response to user.
+8. After creating responses, bot send them to users via facebook api. 
 
 
 # Instruction
