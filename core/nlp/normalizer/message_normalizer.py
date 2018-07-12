@@ -85,7 +85,7 @@ class MessageNormalizer:
 
             w_toks = cls.__correct_wanna_type_abbreviations(w_toks)
 
-            text = WordFormatter.WToks2Str(w_toks)
+            text = WordFormatter.wtoks2str(w_toks)
 
             # remove ' because it make word_tokenize messy
             text = text.replace('\'', '')
@@ -278,7 +278,7 @@ class MessageNormalizer:
     def __remove_stickers(w_toks):
         try:
             for sidx, s in enumerate(w_toks):
-                s_text = WordFormatter.SingleWToks2Str(s)
+                s_text = WordFormatter.wtok2str(s)
 
                 for i in STICKER_DF.sticker.tolist():
                     while i in s_text:

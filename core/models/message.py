@@ -1,11 +1,13 @@
 import logging
 import models
 
+
 class Message:
     """
     This class has information of message user sent.
 
     """
+
     def __init__(self, message_dicts, user_id, is_nlp_skipped=False):
         self.message_dicts = message_dicts
         self.__cluster_id = models.Message.find_cluster_id(message_dicts)

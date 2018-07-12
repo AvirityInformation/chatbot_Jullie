@@ -8,7 +8,7 @@ from core.nlp.response_generator.product.cct.reaction_generator import SP_I_DF
 
 class TextKwDFGenerator:
     def __call__(self, text_df):
-        w_toks = WordFormatter.Df2WToks(text_df, column_name="base_form")
+        w_toks = WordFormatter.df2wtoks(text_df, column_name="base_form")
 
         try:
             matched_list = []

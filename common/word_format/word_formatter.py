@@ -3,35 +3,52 @@ import logging
 
 
 class WordFormatter:
-    @staticmethod
-    def WToks2Str(w_toks):
-        try:
-            text = ''
-            for sent in w_toks:
-                text += WordFormatter.SingleWToks2Str(sent)
-
-            return text
-        except Exception:
-            logging.exception('Error at: ' + str(__name__))
-            return ''
+    """
+    This is utils class to convert word formats
+    """
 
     @staticmethod
-    def SingleWToks2Str(w_tok):
-        try:
-            return ''.join(
-                '' if word == ''
-                else ' ' + str(word) if all(c.isdigit() for c in word)
-                else str(word) if all(not c.isalpha() for c in word)
-                else ' ' + str(word) + '.' if widx == len(w_tok) - 1 and any(c.isalpha() for c in word)
-                else ' ' + str(word)
-                for widx, word in enumerate(w_tok)
-            )
-        except Exception:
-            logging.exception('Error at: ' + str(__name__))
-            return ''
+    def wtoks2str(w_toks):
+        """
+        :param w_toks: list [['i', 'am', 'sad'],['thank','you]]
+        :return: str "i am sad. thank you."
+        """
+
+        if not w_toks:
+            return w_toks
+
+        text = ''
+        for idx, sent in enumerate(w_toks):
+            if idx == 0:
+                text = WordFormatter.wtok2str(sent)
+            else:
+                text += ' ' + WordFormatter.wtok2str(sent)
+
+        return text
 
     @staticmethod
-    def SToks2WToks(s_toks):
+    def wtok2str(w_tok):
+        """
+        :param w_tok: ['i', 'am', 'sad']
+        :return: str: "i am sad."
+        """
+        if not w_tok:
+            return w_tok
+
+        result = ''.join(
+            '' if word == ''
+            else ' ' + str(word) if all(c.isdigit() for c in word)
+            else str(word) if all(not c.isalpha() for c in word)
+            else ' ' + str(word) + '.' if widx == len(w_tok) - 1 and any(c.isalpha() for c in word)
+            else word if widx == 0
+            else ' ' + str(word)
+            for widx, word in enumerate(w_tok)
+        )
+
+        return result
+
+    @staticmethod
+    def stoks2wtoks(s_toks):
         try:
             return [word_tokenize(s) for s in s_toks]
         except Exception:
@@ -39,7 +56,7 @@ class WordFormatter:
             return [[]]
 
     @staticmethod
-    def Df2WToks(text_df, column_name="word"):
+    def df2wtoks(text_df, column_name="word"):
         try:
             if text_df is None:
                 return []
@@ -59,9 +76,9 @@ class WordFormatter:
     @staticmethod
     def Df2Str(text_df):
         try:
-            w_toks = WordFormatter.Df2WToks(text_df)
+            w_toks = WordFormatter.df2wtoks(text_df)
 
-            text = WordFormatter.WToks2Str(w_toks)
+            text = WordFormatter.wtoks2str(w_toks)
 
             return text
         except Exception:
@@ -80,7 +97,7 @@ class WordFormatter:
     def MsgDict2WToks(message_dicts):
         try:
             s_toks = [d['text'] for d in message_dicts]
-            w_toks = WordFormatter.SToks2WToks(s_toks)
+            w_toks = WordFormatter.stoks2wtoks(s_toks)
 
             return w_toks
         except Exception:
