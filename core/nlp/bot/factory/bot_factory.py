@@ -10,32 +10,35 @@ from core.nlp.bot.product.return_visit_bot import ReturnVisitBot
 
 
 class BotFactory:
+    """
+    BotFactory create bots that are designed to do specific tasks depending on session status.
+    To check what kind of bots there are, see the location ../product/
+    """
+    __none_error_message = 'None type object passed'
+
     @classmethod
     def create(cls, user, message, therapy_session):
-        try:
-            args = user, message, therapy_session
-            if cls.__should_create_admin_bot(user, message):
-                return AdminBot(user, message, therapy_session)
+        args = user, message, therapy_session
+        if cls.__should_create_admin_bot(user, message):
+            return AdminBot(user, message, therapy_session)
 
-            if not therapy_session.id:
-                return IntroBot(user, message)
+        if not therapy_session.id:
+            return IntroBot(user, message)
 
-            if therapy_session.finish_at < datetime.utcnow() - timedelta(hours=8):
-                if therapy_session.status == SessionStatus.prepared.value:
-                    return CCTBot(*args)
-                else:
-                    return ReturnVisitBot(*args)
+        if therapy_session.finish_at < datetime.utcnow() - timedelta(hours=8):
+            if therapy_session.status == SessionStatus.prepared.value:
+                return CCTBot(*args)
             else:
-                if cls.__should_create_CCTBot(therapy_session):
-                    return CCTBot(*args)
-                elif cls.__should_create_reflection_bot(therapy_session):
-                    return ReflectionBot(*args)
-                elif cls.__should_create_return_visit_bot(therapy_session):
-                    return ReturnVisitBot(*args)
-                else:
-                    return None
-        except:
-            logging.exception('')
+                return ReturnVisitBot(*args)
+        else:
+            if cls.__should_create_cct_bot(therapy_session):
+                return CCTBot(*args)
+            elif cls.__should_create_reflection_bot(therapy_session):
+                return ReflectionBot(*args)
+            elif cls.__should_create_return_visit_bot(therapy_session):
+                return ReturnVisitBot(*args)
+            else:
+                return None
 
     @classmethod
     def __should_create_admin_bot(cls, user, message):
@@ -49,12 +52,12 @@ class BotFactory:
                     return False
             else:
                 return False
-        except:
-            logging.exception('')
+        except AttributeError:
+            logging.exception(cls.__none_error_message)
             return False
 
     @classmethod
-    def __should_create_CCTBot(cls, therapy_session):
+    def __should_create_cct_bot(cls, therapy_session):
         try:
             if therapy_session.status == SessionStatus.prepared.value:
                 return True
@@ -65,8 +68,8 @@ class BotFactory:
                     return False
             else:
                 return False
-        except:
-            logging.exception('')
+        except AttributeError:
+            logging.exception(cls.__none_error_message)
             return False
 
     @classmethod
@@ -77,24 +80,18 @@ class BotFactory:
                     return True
                 else:
                     return False
-            # elif therapy_session.status in {SessionStatus.asking_comment.value,
-            #                                 SessionStatus.asking_mood.value,
-            #                                 SessionStatus.asking_mood_remind.value}:
             elif therapy_session.status in {SessionStatus.asking_comment.value, SessionStatus.asking_mood.value}:
                 return True
             else:
                 return False
-        except:
-            logging.exception('')
+        except AttributeError:
+            logging.exception(cls.__none_error_message)
             return False
 
     @classmethod
     def __should_create_return_visit_bot(cls, therapy_session):
         try:
-            # return therapy_session.status in {SessionStatus.asking_new.value,
-            #                                   SessionStatus.asking_new_session_remind.value,
-            #                                   SessionStatus.ended.value}
             return therapy_session.status in {SessionStatus.asking_new.value, SessionStatus.ended.value}
-        except:
-            logging.exception('')
+        except AttributeError:
+            logging.exception(cls.__none_error_message)
             return False

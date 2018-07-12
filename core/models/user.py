@@ -1,4 +1,3 @@
-import logging
 import models
 
 
@@ -17,11 +16,8 @@ class User:
         :param status:
         :return:
         """
-        try:
-            models.User.update_status(status, self.id)
-            self.status = status
-        except:
-            logging.exception('')
+        models.User.update_status(status, self.id)
+        self.status = status
 
     @property
     def id(self):
@@ -41,7 +37,4 @@ class User:
 
     @status.setter
     def status(self, status):
-        try:
-            self.__status = status
-        except Exception:
-            logging.exception('')
+        self.__status = status

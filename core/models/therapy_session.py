@@ -1,11 +1,14 @@
-import logging
 from datetime import datetime, timedelta
 import models
 from common.constant.session_status import SessionStatus
 
 
 class TherapySession:
-    interval_after_session = 8
+    """
+    Therapy session means a certain period of time where bot gives psychotherapy.
+    As real CCT method, after finishing session, users have to wait for some time to start another one.
+    """
+    session_interval = 8
 
     def __init__(self, user_id):
         latest_session = models.Session.find_latest_session_data(user_id)
@@ -19,39 +22,24 @@ class TherapySession:
             self.finish_at = latest_session['finish_at']
 
     def change_status(self, status: SessionStatus):
-        try:
-            models.Session.update_status(self.id, status)
-            self.status = status
-        except:
-            logging.exception('')
+        models.Session.update_status(self.id, status)
+        self.status = status
 
     def activate(self):
-        try:
-            self.change_status(SessionStatus.active.value)
-            self.update_finish_at()
-        except:
-            logging.exception('')
+        self.change_status(SessionStatus.active.value)
+        self.update_finish_at()
 
     def prepare(self):
-        try:
-            self.change_status(SessionStatus.prepared.value)
-        except:
-            logging.exception('')
+        self.change_status(SessionStatus.prepared.value)
 
     def update_finish_at(self):
-        try:
-            new_finish_at = datetime.utcnow() + timedelta(minutes=30)
-            models.Session.update_finish_at(self.id, new_finish_at)
-            self.finish_at = new_finish_at
-        except:
-            logging.exception('')
+        new_finish_at = datetime.utcnow() + timedelta(minutes=30)
+        models.Session.update_finish_at(self.id, new_finish_at)
+        self.finish_at = new_finish_at
 
     @classmethod
     def __finish_remind_questions(cls, user):
-        try:
-            models.Session.update_latest_session_status(SessionStatus.ended.value, user.id)
-        except:
-            logging.exception('')
+        models.Session.update_latest_session_status(SessionStatus.ended.value, user.id)
 
     @property
     def id(self):
