@@ -23,6 +23,10 @@ class Message:
         self.__sentiment_score_df = None
 
     def mark_done(self):
+        """
+        This function change the status of message in db so that the messages won't be handled again.
+        :return:
+        """
         try:
             message_ids = [i['id'] for i in self.message_dicts]
             models.Message.change_message_status(message_ids)

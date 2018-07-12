@@ -9,6 +9,9 @@ from core.nlp.normalizer.message_normalizer import MessageNormalizer
 
 
 class MessagePreprocessor:
+    """
+    Make a df with information such as pos, widx, sidx, base_form
+    """
     def __call__(self, message, user):
         try:
             if self.__exists_admin_command(message, user):

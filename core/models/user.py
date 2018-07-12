@@ -12,6 +12,11 @@ class User:
         self.__status = user_data[2]
 
     def update_status(self, status):
+        """
+        status must be enum. fix it.
+        :param status:
+        :return:
+        """
         try:
             models.User.update_status(status, self.id)
             self.status = status

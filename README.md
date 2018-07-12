@@ -8,6 +8,10 @@ These codes are licensed under CC0.
 <br/>
 <br/>
 
+# About Jullie  
+Jullie is a pattern-based chatbot that is built to give psychotherapy called Client Centered Therapy(or Rogerian Therapy).  
+Jullie replies to users with compassion.
+
 # How the system works  
 1. User send message to Jullie facebook page account in Messenger app.
 2. Message will be sent to webhook(endpoint of heroku app) via facebook api.
