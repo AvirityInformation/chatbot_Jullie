@@ -47,3 +47,5 @@ heroku addons:create redistogo:nano -a xxx
 #### 7.Push something to heroku and start dynos.
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
+
+You can start servers from your heroku app dashboard.
