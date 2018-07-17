@@ -3,7 +3,6 @@ import models
 from common.util.util import send_quick_replies
 from core.nlp.bot.product.base_bot import BaseBot
 from core.nlp.response_generator.factory.reflection_response_generator_factory import ReflectionResponseGeneratorFactory
-from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
 from db.my_db import MyDB
 
 
@@ -14,22 +13,16 @@ class ReflectionBot(BaseBot):
         self.therapy_session = therapy_session
 
     def reply(self):
-        try:
-            response_data = self.create_response()
+        response_data = self.create_response()
 
-            self.send_responses(response_data)
-        except:
-            logging.exception('')
+        self.send_responses(response_data)
 
     def create_response(self):
-        try:
-            response_generator = ReflectionResponseGeneratorFactory.create(self.user, self.message,
-                                                                           self.therapy_session)
-            response_data = response_generator(self.therapy_session)
+        response_generator = ReflectionResponseGeneratorFactory.create(self.user, self.message,
+                                                                       self.therapy_session)
+        response_data = response_generator(self.therapy_session)
 
-            return response_data
-        except:
-            return BaseResponseGenerator.response_data_format
+        return response_data
 
     def send_responses(self, response_data):
         try:

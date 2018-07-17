@@ -14,22 +14,16 @@ class ReturnVisitBot(BaseBot):
         self.therapy_session = therapy_session
 
     def reply(self):
-        try:
-            response_data = self.create_response()
+        response_data = self.create_response()
 
-            self.send_responses(response_data)
-        except:
-            logging.exception('')
+        self.send_responses(response_data)
 
     def create_response(self):
-        try:
-            response_generator = ReturnVisitResponseGeneratorFactory.create(self.user, self.message,
-                                                                            self.therapy_session)
-            response_data = response_generator(self.therapy_session)
+        response_generator = ReturnVisitResponseGeneratorFactory.create(self.user, self.message,
+                                                                        self.therapy_session)
+        response_data = response_generator(self.therapy_session)
 
-            return response_data
-        except:
-            logging.exception('')
+        return response_data
 
     def send_responses(self, response_data):
         try:

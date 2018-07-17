@@ -8,32 +8,31 @@ from db.my_db import MyDB
 
 
 class IntroBot(BaseBot):
+    """
+    This bot gives introduction to users about how client centered therapy works
+    When finishing introduction, it creates a session that is in prepared state so that cct bot can
+    start session later.
+    """
+
     def __init__(self, user, message):
         self.user = user
         self.message = message
         print('\nintro bot created')
 
     def reply(self):
-        try:
-            send_typing_on(self.user.sender_id)
+        send_typing_on(self.user.sender_id)
 
-            response_data = self.create_response()
+        response_data = self.create_response()
 
-            self.send_responses(response_data)
+        self.send_responses(response_data)
 
-            send_typing_off(self.user.sender_id)
-        except:
-            logging.exception('')
+        send_typing_off(self.user.sender_id)
 
     def create_response(self):
-        try:
-            response_generator = IntroResponseGeneratorFactory.create(self.user, self.message)
-            response_data = response_generator()
+        response_generator = IntroResponseGeneratorFactory.create(self.user, self.message)
+        response_data = response_generator()
 
-            return response_data
-        except:
-            logging.exception('')
-            return []
+        return response_data
 
     def send_responses(self, response_data):
         try:
