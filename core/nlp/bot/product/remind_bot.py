@@ -1,14 +1,9 @@
-import logging
-
 from core.nlp.bot.product.base_bot import BaseBot
 
 
 class RemindBot(BaseBot):
     def reply(self):
-        try:
-            pass
-        except:
-            logging.exception('')
+        pass
 
     def create_response(self):
         pass

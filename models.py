@@ -14,13 +14,10 @@ from common.constant.user_status import UserStatus
 
 Base = declarative_base()
 
-try:
-    db_url = os.environ.get('DATABASE_URL')
-    engine = create_engine(db_url, echo=False)
-    Base.metadata.create_all(engine)
-    DBSession = sessionmaker(bind=engine)
-except:
-    logging.exception('')
+db_url = os.environ.get('DATABASE_URL')
+engine = create_engine(db_url, echo=False)
+Base.metadata.create_all(engine)
+DBSession = sessionmaker(bind=engine)
 
 
 class SessionContext(object):
@@ -31,22 +28,15 @@ class SessionContext(object):
         return self.session
 
     def __exit__(self, exc_type, exc_value, traceback):
-        try:
-            self.session.flush()
-            self.session.commit()
-            self.session.close()
-        except:
-            logging.exception('')
-            self.session.close()
+        self.session.flush()
+        self.session.commit()
+        self.session.close()
 
 
 class SessionFactory(object):
     @staticmethod
     def create():
-        try:
-            return SessionContext(DBSession())
-        except:
-            logging.exception('')
+        return SessionContext(DBSession())
 
 
 class User(Base):
@@ -64,30 +54,24 @@ class User(Base):
     @classmethod
     def find_by_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                user = db_session \
-                    .query(
-                    cls.sender_id,
-                    cls.first_name,
-                    cls.status
-                ) \
-                    .filter(cls.id == user_id).all()[0]
+            user = db_session \
+                .query(
+                cls.sender_id,
+                cls.first_name,
+                cls.status
+            ) \
+                .filter(cls.id == user_id).all()[0]
 
-                return user
-            except:
-                logging.exception('')
+            return user
 
     @classmethod
     def find_by_sender_id(cls, sender_id):
         with SessionFactory.create() as db_session:
-            try:
-                user_id = db_session \
-                    .query(cls.id) \
-                    .filter(cls.sender_id == sender_id).limit(1).all()[0][0]
+            user_id = db_session \
+                .query(cls.id) \
+                .filter(cls.sender_id == sender_id).limit(1).all()[0][0]
 
-                return user_id
-            except:
-                logging.exception('')
+            return user_id
 
     @classmethod
     def register_user(cls, sender_id):
@@ -112,22 +96,19 @@ class User(Base):
 
     @classmethod
     def __get_user_profile(cls, fbid):
-        try:
-            url = "https://graph.facebook.com/v2.6/" + str(
-                fbid) + "?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=" + str(
-                os.environ.get("PAGE_ACCESS_TOKEN", None))
+        url = "https://graph.facebook.com/v2.6/" + str(fbid) \
+              + "?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=" \
+              + str(os.environ.get("PAGE_ACCESS_TOKEN", None))
 
-            user_profile = requests.get(url).json()
+        user_profile = requests.get(url).json()
 
-            if user_profile is None:
+        if user_profile is None:
+            user_profile = cls.__get_unknown_profile_information()
+        else:
+            if 'error' in user_profile.keys():
                 user_profile = cls.__get_unknown_profile_information()
-            else:
-                if 'error' in user_profile.keys():
-                    user_profile = cls.__get_unknown_profile_information()
 
-            return user_profile
-        except:
-            logging.exception('')
+        return user_profile
 
     @classmethod
     def __get_unknown_profile_information(cls):
@@ -1369,9 +1350,6 @@ class IntroPosition(Base):
             except:
                 db_session.rollback()
                 logging.exception('')
-
-
-metadata.create_all()
 
 
 def delete_user_from_table(user_id, table):

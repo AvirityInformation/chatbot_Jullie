@@ -5,6 +5,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
+"""
+This script is not essential to the basic chatbot function.
+This script is mainly used for admin command
+"""
+
+
 def initialize_database(env_type):
     database_url = ""
 
@@ -65,20 +71,3 @@ def delete_all_rows_of_a_user(user_id, from_messenger=False):
         else:
             print('Didnt delete the user ' + str(user_id))
             return user
-
-
-def search_user(first_name):
-    session = initialize_database(env_type)
-
-    try:
-        users = session \
-            .query(models.User) \
-            .filter(models.User.first_name == first_name).order_by(models.User.id).all()
-
-        for user in users:
-            print(user.id, user.sender_id, user.status)
-
-        return users
-    except:
-        logging.exception('')
-        print('No user with that first name!')

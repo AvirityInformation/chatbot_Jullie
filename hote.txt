@@ -1,0 +1,20 @@
+select*from intro_positions where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08') and position = 'DONE' order by user_id desc;
+select*from intro_positions where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08') order by user_id desc;
+
+select*from messages where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08'::date) order by id desc;
+
+select id, payload from messages where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08'::date) order by id desc;
+
+select count(id) from messages where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08'::date) and user_id in (select user_id from intro_positions where position = 'DONE') and payload is Null;
+
+select count(id) from messages where user_id in (select id from users where created_at > '2018-06-01'::date and created_at < '2018-06-08'::date) and user_id in (select user_id from intro_positions where position = 'DONE') and payload is Null and session_id is not null;
+
+select*from messages where user_id = 490 order by id desc;
+select*from messages where user_id =
+
+
+
+theres a tendency for students to chooose a school that matches their ability
+
+jIt is easy for him to play the guitar
+

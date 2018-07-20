@@ -1,4 +1,3 @@
-import logging
 import redis
 from rq import Worker, Queue, Connection
 import os
@@ -25,11 +24,11 @@ def timeout_handler(job, exc_type, exc_value, traceback):
 
 
 if __name__ == '__main__':
-    try:
-        with Connection(conn):
-            worker = Worker(map(Queue, listen))
-            worker.push_exc_handler(timeout_handler)
+    """
+    Here worker process will start and listen to queue channel 'high'
+    """
+    with Connection(conn):
+        worker = Worker(map(Queue, listen))
+        worker.push_exc_handler(timeout_handler)
 
-            worker.work()
-    except:
-        logging.exception('')
+        worker.work()

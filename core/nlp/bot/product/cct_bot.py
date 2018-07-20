@@ -19,66 +19,61 @@ from random import shuffle
 
 
 class CCTBot(BaseBot):
+    """
+    This bot is in charge of client centered therapy so it's a psychiatrist.
+    This doesn't take care of session status.
+    Once session time ends, rest of interaction with user will be led by reflection_bot.
+    """
+
     def __init__(self, user: User, message: Message, therapy_session: TherapySession):
         self.user = user
         self.message = message
         self.therapy_session = therapy_session
 
     def reply(self):
-        try:
-            if self.therapy_session.status == SessionStatus.prepared.value:
-                self.therapy_session.activate()
+        if self.therapy_session.status == SessionStatus.prepared.value:
+            self.therapy_session.activate()
 
-            send_typing_on(self.user.sender_id)
+        send_typing_on(self.user.sender_id)
 
-            self.message = self.preprocess_message()
+        self.message = self.preprocess_message()
 
-            send_typing_on(self.user.sender_id)
+        send_typing_on(self.user.sender_id)
 
-            UsersFeeling.save_feelings(self.message.text_kw_df, self.user.id)
+        UsersFeeling.save_feelings(self.message.text_kw_df, self.user.id)
 
-            message_types = self.analyze_message_type()
+        message_types = self.analyze_message_type()
 
-            send_typing_on(self.user.sender_id)
+        send_typing_on(self.user.sender_id)
 
-            response_data = self.create_response(message_types)
+        response_data = self.create_response(message_types)
 
-            send_typing_on(self.user.sender_id)
+        send_typing_on(self.user.sender_id)
 
-            self.send_responses(response_data, message_types)
-            print("\nBot finished sending responses")
-        except:
-            logging.exception('')
-            print('\n*********************** Bot couldnt make responses ***********************')
+        self.send_responses(response_data, message_types)
+        print("\nBot finished sending responses")
 
     def preprocess_message(self):
-        try:
-            preprocessor = MessagePreprocessor()
-            processed_message = preprocessor(self.message, self.user)
+        preprocessor = MessagePreprocessor()
+        processed_message = preprocessor(self.message, self.user)
 
-            print("\n---------------- self.message ----------------",
-                  "\nOriginal DF\n", processed_message.original_df,
-                  "\n\ntext_df\n", processed_message.text_df,
-                  "\n\ntext_kw_df\n", processed_message.text_kw_df,
-                  '\n\nintent_list\n', processed_message.intent_list,
-                  '\n\nsentiment_score_df\n', processed_message.sentiment_score_df,
-                  '\n----------------------------------------------')
+        print("\n---------------- self.message ----------------",
+              "\nOriginal DF\n", processed_message.original_df,
+              "\n\ntext_df\n", processed_message.text_df,
+              "\n\ntext_kw_df\n", processed_message.text_kw_df,
+              '\n\nintent_list\n', processed_message.intent_list,
+              '\n\nsentiment_score_df\n', processed_message.sentiment_score_df,
+              '\n----------------------------------------------')
 
-            return processed_message
-        except:
-            logging.exception('')
+        return processed_message
 
     def analyze_message_type(self):
-        try:
-            msg_type_checker = MessageTypeChecker(self.user, self.message)
-            message_types = msg_type_checker()
+        msg_type_checker = MessageTypeChecker(self.user, self.message)
+        message_types = msg_type_checker()
 
-            print('\nmessage_types\n', message_types)
+        print('\nmessage_types\n', message_types)
 
-            return message_types
-        except:
-            logging.exception('')
-            return []
+        return message_types
 
     def create_response(self, message_types):
         response_data = BaseResponseGenerator.response_data_format
@@ -134,9 +129,6 @@ class CCTBot(BaseBot):
             logging.exception('')
 
     def __restart_msg_processing(self, message_ids):
-        try:
-            print("\n------ Restart message processing because of new messaage during the process -------\n")
+        print("\n------ Restart message processing because of new messaage during the process -------\n")
 
-            models.Message.change_current_and_new_message_status(message_ids, self.user.id)
-        except:
-            logging.exception('')
+        models.Message.change_current_and_new_message_status(message_ids, self.user.id)

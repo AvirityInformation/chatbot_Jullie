@@ -21,7 +21,11 @@ def verify():
 
 @app.route('/', methods=['POST'])
 def webhook():
-    # endpoint for processing incoming messaging events
+    """
+    endpoint for processing incoming messaging events
+    Here we parse json data to get message info
+    :return: 
+    """
     data = request.get_json()
 
     print("\n[JSON from webhook]")

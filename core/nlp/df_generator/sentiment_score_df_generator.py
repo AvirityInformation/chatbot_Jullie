@@ -4,32 +4,29 @@ import numpy as np
 
 
 class SentimentScoreDFGenerator:
-    # sentiment score is a df of negative/positive score of each sentence
+    """
+    sentiment score is a df with negative/positive score of each sentence
+    This class must be integrated to preprocessor
+    """
+
     def __call__(self, text_df, text_kw_df):
-        try:
-            # TODO: find the case where keyword_score_df is used
-            #  make keyword score df that is not positive/negative point
-            # kwscore_df = self.__get_kwscores(text_df, text_kw_df)
-            # kwscore_df = kwscore_df.sent_kwscore
+        # TODO: find the case where keyword_score_df is used
+        if text_df is None:
+            return None
 
-            if text_df is None:
-                return None
+        if text_kw_df is None:
+            sentiment_score_df = pd.DataFrame({"sidx": text_df.sidx.tolist()})
+            sentiment_score_df['nscore'] = 0
+            sentiment_score_df['pscore'] = 0
 
-            if text_kw_df is None:
-                sentiment_score_df = pd.DataFrame({"sidx": text_df.sidx.tolist()})
-                sentiment_score_df['nscore'] = 0
-                sentiment_score_df['pscore'] = 0
-
-                return sentiment_score_df
-
-            # get the sentiment score sscore of each sentence.
-            npdf = self.__sum_sentiment_scores(text_df, text_kw_df)
-            sentiment_score_df = npdf.iloc[:, 0:3]
-
-            print("\nSentiment score df\n{}".format(sentiment_score_df))
             return sentiment_score_df
-        except:
-            logging.exception('')
+
+        # get the sentiment score sscore of each sentence.
+        npdf = self.__sum_sentiment_scores(text_df, text_kw_df)
+        sentiment_score_df = npdf.iloc[:, 0:3]
+
+        print("\nSentiment score df\n{}".format(sentiment_score_df))
+        return sentiment_score_df
 
     @classmethod
     def __get_kwscores(cls, text_df, text_kw_df):
@@ -61,11 +58,6 @@ class SentimentScoreDFGenerator:
                 npdf.pscore[row.sidx] += row.sscore
             else:
                 npdf.nscore[row.sidx] += row.sscore
-
-        # npdf['order_bonus'] = cls.__get_order_bonus(text_df)
-        #
-        # npdf.nscore *= npdf.order_bonus
-        # npdf.pscore *= npdf.order_bonus
 
         return npdf
 

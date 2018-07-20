@@ -13,7 +13,7 @@ class PreviousSentCMPResponseGenerator(BaseResponseGenerator):
     def __call__(self):
         try:
             previous_msg = models.Message.fetch_previous_msg(self.user.id)
-            w_toks = WordFormatter.SToks2WToks([previous_msg])
+            w_toks = WordFormatter.stoks2wtoks([previous_msg])
 
             message_normalizer = MessageNormalizer()
             df = message_normalizer(w_toks, self.user.sender_id, from_preprocessor=False)

@@ -1,6 +1,5 @@
 import logging
 from typing import List, Dict
-
 from common.util.util import send_typing_on
 from core.nlp.df_generator.original_df_generator import OriginalDFGenerator
 from common.constant.df_from_csv import STICKER_DF, SFDF, WANNA_SHORT_FORM, UNIMPORTANT_WORDS_FOR_REPEAT
@@ -12,31 +11,27 @@ from common.word_format.df_utils import Nlp_util
 
 class MessageNormalizer:
     def __call__(self, message_dicts: List[Dict[str, str]], sender_id, from_preprocessor=True):
-        try:
-            if from_preprocessor:
-                message_dicts = self.__convert_attachment(message_dicts)
+        if from_preprocessor:
+            message_dicts = self.__convert_attachment(message_dicts)
 
-                message_dicts = self.__normalize_apostrophe(message_dicts)
+            message_dicts = self.__normalize_apostrophe(message_dicts)
 
-                w_toks = WordFormatter.MsgDict2WToks(message_dicts)
-            else:
-                w_toks = message_dicts
+            w_toks = WordFormatter.MsgDict2WToks(message_dicts)
+        else:
+            w_toks = message_dicts
 
-            print('\nword_tokenized\n', w_toks)
+        print('\nword_tokenized\n', w_toks)
 
-            normalized_w_toks = self.normalize_message_by_w_toks(w_toks)
+        normalized_w_toks = self.normalize_message_by_w_toks(w_toks)
 
-            send_typing_on(sender_id)
+        send_typing_on(sender_id)
 
-            # make original_df with sidx, widx, word, pos tag
-            df = OriginalDFGenerator.create_original_df_by_w_toks(normalized_w_toks)
+        # make original_df with sidx, widx, word, pos tag
+        df = OriginalDFGenerator.create_original_df_by_w_toks(normalized_w_toks)
 
-            df = self.normalize_message_by_df(df)
+        df = self.normalize_message_by_df(df)
 
-            return df
-        except:
-            logging.exception('')
-            return None
+        return df
 
     def normalize_message_by_w_toks(self, w_toks):
         # [[], [], []]
@@ -63,13 +58,9 @@ class MessageNormalizer:
     # format original text
     @staticmethod
     def __lowercase_w_toks(w_toks):
-        try:
-            w_toks = [[w.lower() for w in s] for s in w_toks]
+        w_toks = [[w.lower() for w in s] for s in w_toks]
 
-            return w_toks
-        except:
-            logging.exception('')
-            return w_toks
+        return w_toks
 
     @staticmethod
     def __lowercase_by_pos(row):
@@ -85,7 +76,7 @@ class MessageNormalizer:
 
             w_toks = cls.__correct_wanna_type_abbreviations(w_toks)
 
-            text = WordFormatter.WToks2Str(w_toks)
+            text = WordFormatter.wtoks2str(w_toks)
 
             # remove ' because it make word_tokenize messy
             text = text.replace('\'', '')
@@ -278,7 +269,7 @@ class MessageNormalizer:
     def __remove_stickers(w_toks):
         try:
             for sidx, s in enumerate(w_toks):
-                s_text = WordFormatter.SingleWToks2Str(s)
+                s_text = WordFormatter.wtok2str(s)
 
                 for i in STICKER_DF.sticker.tolist():
                     while i in s_text:
@@ -499,20 +490,16 @@ class MessageNormalizer:
             return message_dicts
 
     def normalize_message_by_df(self, df):
-        try:
-            if df is None:
-                return None
+        if df is None:
+            return None
 
-            df = MessageNormalizer.cut_sent_by_interjection(df)
+        df = MessageNormalizer.cut_sent_by_interjection(df)
 
-            df = MessageNormalizer.cut_sent_by_unimportant_words_at_head(df)
+        df = MessageNormalizer.cut_sent_by_unimportant_words_at_head(df)
 
-            df = MessageNormalizer.remove_unimportant_words_at_tail(df)
+        df = MessageNormalizer.remove_unimportant_words_at_tail(df)
 
-            return df
-        except:
-            logging.exception('')
-            return df
+        return df
 
     def __convert_attachment(self, message_dicts):
         return [{'text': '', 'id': message['id']} if message['text'] == 'ATTACHMENT' else message for message in

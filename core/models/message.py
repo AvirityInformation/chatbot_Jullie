@@ -1,11 +1,13 @@
 import logging
 import models
 
+
 class Message:
     """
     This class has information of message user sent.
 
     """
+
     def __init__(self, message_dicts, user_id, is_nlp_skipped=False):
         self.message_dicts = message_dicts
         self.__cluster_id = models.Message.find_cluster_id(message_dicts)
@@ -21,6 +23,10 @@ class Message:
         self.__sentiment_score_df = None
 
     def mark_done(self):
+        """
+        This function change the status of message in db so that the messages won't be handled again.
+        :return:
+        """
         try:
             message_ids = [i['id'] for i in self.message_dicts]
             models.Message.change_message_status(message_ids)

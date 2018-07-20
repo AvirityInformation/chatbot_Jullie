@@ -8,7 +8,7 @@ from core.nlp.response_generator.product.cct.reaction_generator import SP_I_DF
 
 class TextKwDFGenerator:
     def __call__(self, text_df):
-        w_toks = WordFormatter.Df2WToks(text_df, column_name="base_form")
+        w_toks = WordFormatter.df2wtoks(text_df, column_name="base_form")
 
         try:
             matched_list = []
@@ -22,37 +22,28 @@ class TextKwDFGenerator:
 
             if all('-' not in i for i in matched_list):
                 return None
-        except Exception:
+        except:
             logging.exception('Error at: ' + str(__name__))
             return None
 
-        try:
-            text_kw_df = pd.DataFrame(matched_list)
-            text_kw_df.columns = ['sidx', 'widx', 'word', 'Target']
+        text_kw_df = pd.DataFrame(matched_list)
+        text_kw_df.columns = ['sidx', 'widx', 'word', 'Target']
 
-            text_kw_df = self.__detect_following_emphasis(text_df, text_kw_df)
-            text_kw_df = self.__detect_prior_emphasis(text_df, text_kw_df)
+        text_kw_df = self.__detect_following_emphasis(text_df, text_kw_df)
+        text_kw_df = self.__detect_prior_emphasis(text_df, text_kw_df)
 
-            text_kw_df.sort_values(['sidx', 'widx'], ascending=[True, True], inplace=True)
-            text_kw_df = text_kw_df.reset_index(drop=True)
+        text_kw_df.sort_values(['sidx', 'widx'], ascending=[True, True], inplace=True)
+        text_kw_df = text_kw_df.reset_index(drop=True)
 
-            text_kw_df = self.__add_points_text_kw_df(text_df, text_kw_df)
+        text_kw_df = self.__add_points_text_kw_df(text_df, text_kw_df)
 
-            return text_kw_df
-
-        except:
-            logging.exception('')
-            return None
+        return text_kw_df
 
     @classmethod
     def __add_points_text_kw_df(cls, text_df, text_kw_df):
         try:
             text_kw_df['ng'] = cls.__get_matched_negative_flags(text_df, text_kw_df)
-            # text_kw_df["w_type"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index().subject,
-            #                                         axis=1)
-            # text_kw_df["subj"] = text_kw_df.apply(lambda row: cls.__get_subject_for_kw(row, text_df),
-            #                                       axis=1)
-            # text_kw_df["subj"] = text_kw_df["subj"].apply(lambda row: cls.__get_proper_subject_form(row))
+
             text_kw_df["iscore"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index().score,
                                                     axis=1)
             text_kw_df["kw_type"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index()['Type'],

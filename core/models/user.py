@@ -1,4 +1,3 @@
-import logging
 import models
 
 
@@ -12,11 +11,13 @@ class User:
         self.__status = user_data[2]
 
     def update_status(self, status):
-        try:
-            models.User.update_status(status, self.id)
-            self.status = status
-        except:
-            logging.exception('')
+        """
+        status must be enum. fix it.
+        :param status:
+        :return:
+        """
+        models.User.update_status(status, self.id)
+        self.status = status
 
     @property
     def id(self):
@@ -36,7 +37,4 @@ class User:
 
     @status.setter
     def status(self, status):
-        try:
-            self.__status = status
-        except Exception:
-            logging.exception('')
+        self.__status = status

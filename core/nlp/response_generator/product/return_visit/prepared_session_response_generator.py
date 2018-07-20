@@ -43,7 +43,7 @@ class PreparedSessionResponseGenerator(BaseResponseGenerator):
         try:
             therapy_session.change_status(SessionStatus.ended.value)
 
-            new_finish_at = datetime.utcnow() - timedelta(hours=TherapySession.interval_after_session)
+            new_finish_at = datetime.utcnow() - timedelta(hours=TherapySession.session_interval)
             models.Session.update_finish_at(therapy_session.id, new_finish_at)
         except:
             logging.exception('')

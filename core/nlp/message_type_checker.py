@@ -216,7 +216,7 @@ class MessageTypeChecker:
             if len(previous_msg) == 0:
                 return False
 
-            w_toks = WordFormatter.SToks2WToks([previous_msg])
+            w_toks = WordFormatter.stoks2wtoks([previous_msg])
 
             message_normalizer = MessageNormalizer()
             df = message_normalizer(w_toks, None, from_preprocessor=False)
