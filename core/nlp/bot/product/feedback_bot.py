@@ -8,6 +8,7 @@ from db.my_db import MyDB
 
 class FeedbackBot(BaseBot):
     def reply(self):
+        # this is not good in terms of interface. fix this.
         pass
 
     def find_inactivated_users(self):

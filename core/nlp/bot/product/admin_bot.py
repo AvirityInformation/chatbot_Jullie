@@ -7,6 +7,10 @@ from db.my_db import MyDB
 
 
 class AdminBot(BaseBot):
+    """
+    This bot handle admin command.
+    You can see the list of the admin commands in /common/constant/admin_command.py
+    """
     def __init__(self, user, message, therapy_session):
         self.user = user
         self.message = message

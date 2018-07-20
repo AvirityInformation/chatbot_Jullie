@@ -8,6 +8,9 @@ from db.my_db import MyDB
 
 
 class ReturnVisitBot(BaseBot):
+    """
+    This bot works when users come back for second session or later.
+    """
     def __init__(self, user, message, therapy_session):
         self.user = user
         self.message = message
