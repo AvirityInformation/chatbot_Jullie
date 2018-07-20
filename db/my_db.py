@@ -1,6 +1,5 @@
 import logging
 from typing import List
-
 import models
 from common.util.util import send_typing_off, send_typing_on, send_message
 
@@ -8,12 +7,9 @@ from common.util.util import send_typing_off, send_typing_on, send_message
 class MyDB(object):
     @classmethod
     def control_typing_indicator(cls, user_ids_list):
-        try:
-            for ids in user_ids_list:
-                if not models.Response.exists_future_message(ids[0]):
-                    send_typing_off(ids[1])
-        except:
-            logging.exception('')
+        for ids in user_ids_list:
+            if not models.Response.exists_future_message(ids[0]):
+                send_typing_off(ids[1])
 
     @classmethod
     def send_responses(cls, contents: List[str], cluster_id, sender_id, user_id, response_type,
@@ -56,21 +52,17 @@ class MyDB(object):
 
     @staticmethod
     def __update_delay(delay, message_length):
-        try:
-            if message_length <= 17:
-                delay_to_add = 2
-            elif 18 <= message_length <= 44:
-                delay_to_add = 3
-            elif 45 <= message_length <= 64:
-                delay_to_add = 4
-            elif 65 <= message_length:
-                delay_to_add = 5
-            else:
-                delay_to_add = 0
+        if message_length <= 17:
+            delay_to_add = 2
+        elif 18 <= message_length <= 44:
+            delay_to_add = 3
+        elif 45 <= message_length <= 64:
+            delay_to_add = 4
+        elif 65 <= message_length:
+            delay_to_add = 5
+        else:
+            delay_to_add = 0
 
-            delay += delay_to_add
+        delay += delay_to_add
 
-            return delay
-        except:
-            logging.exception('')
-            return 3
+        return delay

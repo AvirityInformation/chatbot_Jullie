@@ -15,26 +15,23 @@ from datetime import datetime
 
 
 def fetch_regularly():
-    try:
-        message_data = MessageRetriever.fetch_messages_to_process()
+    message_data = MessageRetriever.fetch_messages_to_process()
 
-        if message_data is None:
-            return None
-        else:
-            try:
-                q = Queue('high', connection=conn)
+    if message_data is None:
+        return None
+    else:
+        try:
+            q = Queue('high', connection=conn)
 
-                for data in message_data:
-                    q.enqueue(main.main, data)
-                    print('\n>>>> Enqueued successfully!\n{}'.format(datetime.utcnow()))
-                    pprint(data['user_id'])
-                    print("[Remaining jobs in queue]")
-                    pprint(q.job_ids)
-            except Exception:
-                print('Couldn\'t enqueue messages')
-                logging.exception('')
-    except Exception:
-        logging.exception('')
+            for data in message_data:
+                q.enqueue(main.main, data)
+                print('\n>>>> Enqueued successfully!\n{}'.format(datetime.utcnow()))
+                pprint(data['user_id'])
+                print("[Remaining jobs in queue]")
+                pprint(q.job_ids)
+        except Exception:
+            print('Couldn\'t enqueue messages')
+            logging.exception('')
 
 
 def send_response_regularly():
@@ -83,12 +80,6 @@ def get_unsent_responses():
         return []
 
 
-def reminder():
-    print('\n[REMIND] start')
-    Reminder.make_remind()
-    print("\n[REMIND] sent")
-
-
 def ask_feecback():
     bot = FeedbackBot()
 
@@ -98,30 +89,11 @@ def ask_feecback():
 
 
 if __name__ == '__main__':
-    last_remind_time = datetime.utcnow() - timedelta(minutes=30)
     last_feed_back_time = datetime.utcnow() - timedelta(minutes=5)
 
-    while 1 == 1:
-        # try:
-        #     if datetime.utcnow() > last_remind_time + timedelta(minutes=30):
-        #         last_remind_time = datetime.utcnow()
-        #         reminder()
-        # except:
-        #     logging.exception('')
-
-        try:
-            if datetime.utcnow() > last_feed_back_time + timedelta(minutes=5):
-                last_feed_back_time = datetime.utcnow()
-                ask_feecback()
-        except:
-            logging.exception('')
-
-        try:
-            fetch_regularly()
-        except:
-            logging.exception('')
-
-        try:
-            send_response_regularly()
-        except:
-            logging.exception('')
+    while True:
+        if datetime.utcnow() > last_feed_back_time + timedelta(minutes=5):
+            last_feed_back_time = datetime.utcnow()
+            ask_feecback()
+        fetch_regularly()
+        send_response_regularly()
