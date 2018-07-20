@@ -1,4 +1,3 @@
-import logging
 import models
 from common.constant.intro_position import IntroPosition as IP
 from common.constant.payloads import Payload
@@ -15,56 +14,47 @@ class IntroGenerator(object):
 
     @staticmethod
     def __create_greeting():
-        try:
-            responses = [
-                "Hi! I am glad to meet you.",
-            ]
+        responses = [
+            "Hi! I am glad to meet you.",
+        ]
 
-            quick_replies_title = QuickReplies.greeting_title.value
-            quick_replies = QuickReplies.greeting.value
+        quick_replies_title = QuickReplies.greeting_title.value
+        quick_replies = QuickReplies.greeting.value
 
-            return responses, quick_replies_title, quick_replies, Payload.GREETING.value
-        except:
-            logging.exception('')
-            return [], '', [], 'DEFAULT'
+        return responses, quick_replies_title, quick_replies, Payload.GREETING.value
 
     @classmethod
     def generate_intro_responses(cls, message_dicts, user):
-        try:
-            message = message_dicts[0]['text']
+        message = message_dicts[0]['text']
 
-            if user.status == US.GET_STARTED.value:
-                return cls.__start_introduction(user)
-            elif user.status == US.IN_INTRO.value:
-                position = models.IntroPosition.find_position_by_user_id(user.id)
+        if user.status == US.GET_STARTED.value:
+            return cls.__start_introduction(user)
+        elif user.status == US.IN_INTRO.value:
+            position = models.IntroPosition.find_position_by_user_id(user.id)
 
-                if position == IP.GREETING.value:
-                    return cls.__create_ask_suicide_illness(user.id, message)
-                elif position == IP.ASK_SUICIDE_ILLNESS.value:
-                    return cls.__create_have_suicide_illness_or_cct_1(user, message)
-                elif position == IP.CCT_1.value:
-                    return cls.__create_cct_2(user.id, message)
-                elif position == IP.CCT_2.value:
-                    return cls.__create_cct_3(user.id, message)
-                elif position == IP.CCT_3.value:
-                    return cls.__create_cct_4(user.id, message)
-                elif position == IP.CCT_4.value:
-                    return cls.__create_cct_5(user.id, message)
-                elif position == IP.CCT_5.value:
-                    return cls.__create_session_1(user.id, message)
-                elif position == IP.SESSION_1.value:
-                    return cls.__create_session_2(user.id, message)
-                elif position == IP.SESSION_2.value:
-                    return cls.__create_initial_regular_message(user, message)
-            elif user.status == US.SUICIDE_ILLNESS.value:
-                return cls.__handle_restart(user, message)
-            else:
-                print('Trying to make intro response_generator for users not in intro')
-                return ["You know I'm always here for you."], '', [], 'DEFAULT'
-
-        except Exception:
-            logging.exception('Could not continue intro')
-            return [], '', [], 'DEFAULT'
+            if position == IP.GREETING.value:
+                return cls.__create_ask_suicide_illness(user.id, message)
+            elif position == IP.ASK_SUICIDE_ILLNESS.value:
+                return cls.__create_have_suicide_illness_or_cct_1(user, message)
+            elif position == IP.CCT_1.value:
+                return cls.__create_cct_2(user.id, message)
+            elif position == IP.CCT_2.value:
+                return cls.__create_cct_3(user.id, message)
+            elif position == IP.CCT_3.value:
+                return cls.__create_cct_4(user.id, message)
+            elif position == IP.CCT_4.value:
+                return cls.__create_cct_5(user.id, message)
+            elif position == IP.CCT_5.value:
+                return cls.__create_session_1(user.id, message)
+            elif position == IP.SESSION_1.value:
+                return cls.__create_session_2(user.id, message)
+            elif position == IP.SESSION_2.value:
+                return cls.__create_initial_regular_message(user, message)
+        elif user.status == US.SUICIDE_ILLNESS.value:
+            return cls.__handle_restart(user, message)
+        else:
+            print('Trying to make intro response_generator for users not in intro')
+            return ["You know I'm always here for you."], '', [], 'DEFAULT'
 
     @classmethod
     def __create_cct_1(cls, user_id, message):

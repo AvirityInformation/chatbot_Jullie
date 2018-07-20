@@ -5,6 +5,11 @@ from core.nlp.bot.factory.bot_factory import BotFactory
 
 
 def main(message_data):
+    """
+    This func is called by worker.
+    :param message_data:
+    :return:
+    """
     user = User(message_data['user_id'])
     message = Message(message_data['messages'], user.id)
     therapy_session = TherapySession(user.id)
