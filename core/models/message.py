@@ -5,10 +5,16 @@ import models
 class Message:
     """
     This class has information of message user sent.
-
     """
 
     def __init__(self, message_dicts, user_id, is_nlp_skipped=False):
+        """
+        Each instance of this class represent for a CLUSTER that is a combination of some messages sent by users.
+        If the message is during the session, the instance will have session_id too.
+        :param message_dicts:
+        :param user_id:
+        :param is_nlp_skipped:
+        """
         self.message_dicts = message_dicts
         self.__cluster_id = models.Message.find_cluster_id(message_dicts)
         self.__session_id = models.Session.find_latest_id_by_user_id(user_id)
@@ -27,12 +33,9 @@ class Message:
         This function change the status of message in db so that the messages won't be handled again.
         :return:
         """
-        try:
-            message_ids = [i['id'] for i in self.message_dicts]
-            models.Message.change_message_status(message_ids)
-            print('\nmessage done')
-        except:
-            logging.exception('')
+        message_ids = [i['id'] for i in self.message_dicts]
+        models.Message.change_message_status(message_ids)
+        print('\nmessage done')
 
     @property
     def cluster_id(self):

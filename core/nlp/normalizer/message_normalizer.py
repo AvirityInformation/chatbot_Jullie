@@ -51,7 +51,6 @@ class MessageNormalizer:
         w_toks = cls.__normalize_apostrophe(w_toks)
         w_toks = cls.__lowercase_w_toks(w_toks)
         w_toks = cls.__remove_stickers(w_toks)
-        w_toks = cls.__remove_exceptional_stop_words(w_toks)
 
         return w_toks
 
@@ -459,35 +458,22 @@ class MessageNormalizer:
     def __remove_unimportant_intent_sent(w_toks, intents):
         keeping_intent_list = ['normal', 'question']
 
-        try:
-            # if 'normal' or 'question' not in self.intents:
-            if not any(i in keeping_intent_list for i in intents):
-                return None
+        # if 'normal' or 'question' not in self.intents:
+        if not any(i in keeping_intent_list for i in intents):
+            return None
 
-            new_w_toks = []
-            # remove unimportant intent sentence from w_toks
-            for i, w in zip(intents, w_toks):
-                if i in keeping_intent_list:
-                    new_w_toks.append(w)
+        new_w_toks = []
+        # remove unimportant intent sentence from w_toks
+        for i, w in zip(intents, w_toks):
+            if i in keeping_intent_list:
+                new_w_toks.append(w)
 
-            return new_w_toks
-        except:
-            logging.exception('')
-            return w_toks
-
-    @staticmethod
-    def __remove_exceptional_stop_words(w_toks):
-        # remove words like yessssss
-        return w_toks
+        return new_w_toks
 
     @classmethod
     def __normalize_apostrophe(cls, message_dicts):
-        try:
-            message_dicts = [{'text': i['text'].replace("’", "'"), 'id': i['id']} for i in message_dicts]
-            return message_dicts
-        except:
-            logging.exception('')
-            return message_dicts
+        message_dicts = [{'text': i['text'].replace("’", "'"), 'id': i['id']} for i in message_dicts]
+        return message_dicts
 
     def normalize_message_by_df(self, df):
         if df is None:

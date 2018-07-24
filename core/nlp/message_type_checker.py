@@ -17,103 +17,95 @@ class MessageTypeChecker:
         self.msg = msg
 
     def __call__(self):
-        try:
-            if self.user.status == UserStatus.SUICIDE_IN_SESSION.value:
-                return [MsgType.SUICIDE.value]
+        if self.user.status == UserStatus.SUICIDE_IN_SESSION.value:
+            return [MsgType.SUICIDE.value]
 
-            elif SuicideDetector.is_suicidal(self.msg.text_df):
-                message_type = [MsgType.SUICIDE.value]
-                return message_type
-
-            elif self.__is_in_intent_list(Intent.CANT_GET_ATTENTION_FROM_BF):
-                message_type = [MsgType.CANT_GET_ATTENTION_FROM_BF.value]
-
-            elif self.__is_in_intent_list(Intent.LIKE_SOMEONE):
-                message_type = [MsgType.LIKE_SOMEONE.value]
-
-            elif self.__is_in_intent_list(Intent.LACK_OF_CONFIDENCE):
-                message_type = [MsgType.LACK_OF_CONFIDENCE.value]
-
-            elif self.__is_in_intent_list(Intent.ABOUT_BREAKUP):
-                message_type = [MsgType.ABOUT_BREAKUP.value]
-
-            elif self.__is_in_intent_list(Intent.NO_FRIENDS):
-                message_type = [MsgType.NO_FRIENDS.value]
-
-            elif self.__is_in_intent_list(Intent.NOT_LISTENING):
-                message_type = [MsgType.NOT_LISTENING.value]
-
-            elif self.__is_in_intent_list(Intent.HATE_REPETITIVE):
-                message_type = [MsgType.HATE_REPEATITIVE.value]
-
-            elif self.__is_in_intent_list(Intent.JULLIE_USELESS):
-                message_type = [MsgType.JULLIE_USELESS.value]
-
-            elif self.__is_in_intent_list(Intent.COMPLAINT_OR_DISSING):
-                message_type = [MsgType.COMPLAINT_OR_DISSING.value]
-
-            elif self.__is_in_intent_list(Intent.NO_IDEA):
-                message_type = [MsgType.NO_IDEA.value]
-
-            elif self.__is_in_intent_list(Intent.QUESTION_NO_IDEA):
-                message_type = [MsgType.QUESTION_NO_IDEA.value]
-
-            elif self.__is_in_intent_list(Intent.NEED_HELP):
-                message_type = [MsgType.NEED_HELP.value]
-
-            elif self.__is_in_intent_list(Intent.ANXIOUS):
-                message_type = [MsgType.ANXIOUS.value]
-
-            elif self.__is_in_intent_list(Intent.LONELY):
-                message_type = [MsgType.LONELY.value]
-
-            elif self.__is_in_intent_list(Intent.CALL_ME_NAMES):
-                message_type = [MsgType.CALL_ME_NAMES.value]
-
-            elif self.__is_in_intent_list(Intent.MONEY):
-                message_type = [MsgType.MONEY.value]
-
-            elif self.__is_in_intent_list(Intent.MISSING):
-                message_type = [MsgType.MISSING.value]
-
-            elif self.__has_intent_from_api_only(self.msg.intent_list):
-                message_type = self.__get_msg_type_of_api_intent_only()
-
-            elif self.__has_question_only(self.msg.intent_list):
-                message_type = self.__get_question_message_type(self.msg.intent_list)
-
-            elif self.__is_msg_meaningless_intent_only(self.msg.intent_list):
-                message_type = self.__get_msg_type_for_only_meaningless_intent(self.user.id)
-
-            else:
-                message_type = self.__get_regular_message_type()
-
-            if self.__exists_bye_intent():
-                message_type = self.__modify_message_types_by_bye_intents(message_type)
-
-            message_type = self.__add_QR_by_past_response_types(message_type)
-
-            message_type = deduplicate_preserving_order(message_type)
-
+        elif SuicideDetector.is_suicidal(self.msg.text_df):
+            message_type = [MsgType.SUICIDE.value]
             return message_type
-        except:
-            logging.exception('')
-            return [MsgType.LIS.value]
+
+        elif self.__is_in_intent_list(Intent.CANT_GET_ATTENTION_FROM_BF):
+            message_type = [MsgType.CANT_GET_ATTENTION_FROM_BF.value]
+
+        elif self.__is_in_intent_list(Intent.LIKE_SOMEONE):
+            message_type = [MsgType.LIKE_SOMEONE.value]
+
+        elif self.__is_in_intent_list(Intent.LACK_OF_CONFIDENCE):
+            message_type = [MsgType.LACK_OF_CONFIDENCE.value]
+
+        elif self.__is_in_intent_list(Intent.ABOUT_BREAKUP):
+            message_type = [MsgType.ABOUT_BREAKUP.value]
+
+        elif self.__is_in_intent_list(Intent.NO_FRIENDS):
+            message_type = [MsgType.NO_FRIENDS.value]
+
+        elif self.__is_in_intent_list(Intent.NOT_LISTENING):
+            message_type = [MsgType.NOT_LISTENING.value]
+
+        elif self.__is_in_intent_list(Intent.HATE_REPETITIVE):
+            message_type = [MsgType.HATE_REPEATITIVE.value]
+
+        elif self.__is_in_intent_list(Intent.JULLIE_USELESS):
+            message_type = [MsgType.JULLIE_USELESS.value]
+
+        elif self.__is_in_intent_list(Intent.COMPLAINT_OR_DISSING):
+            message_type = [MsgType.COMPLAINT_OR_DISSING.value]
+
+        elif self.__is_in_intent_list(Intent.NO_IDEA):
+            message_type = [MsgType.NO_IDEA.value]
+
+        elif self.__is_in_intent_list(Intent.QUESTION_NO_IDEA):
+            message_type = [MsgType.QUESTION_NO_IDEA.value]
+
+        elif self.__is_in_intent_list(Intent.NEED_HELP):
+            message_type = [MsgType.NEED_HELP.value]
+
+        elif self.__is_in_intent_list(Intent.ANXIOUS):
+            message_type = [MsgType.ANXIOUS.value]
+
+        elif self.__is_in_intent_list(Intent.LONELY):
+            message_type = [MsgType.LONELY.value]
+
+        elif self.__is_in_intent_list(Intent.CALL_ME_NAMES):
+            message_type = [MsgType.CALL_ME_NAMES.value]
+
+        elif self.__is_in_intent_list(Intent.MONEY):
+            message_type = [MsgType.MONEY.value]
+
+        elif self.__is_in_intent_list(Intent.MISSING):
+            message_type = [MsgType.MISSING.value]
+
+        elif self.__has_intent_from_api_only(self.msg.intent_list):
+            message_type = self.__get_msg_type_of_api_intent_only()
+
+        elif self.__has_question_only(self.msg.intent_list):
+            message_type = self.__get_question_message_type(self.msg.intent_list)
+
+        elif self.__is_msg_meaningless_intent_only(self.msg.intent_list):
+            message_type = self.__get_msg_type_for_only_meaningless_intent(self.user.id)
+
+        else:
+            message_type = self.__get_regular_message_type()
+
+        if self.__exists_bye_intent():
+            message_type = self.__modify_message_types_by_bye_intents(message_type)
+
+        message_type = self.__add_QR_by_past_response_types(message_type)
+
+        message_type = deduplicate_preserving_order(message_type)
+
+        return message_type
 
     def __get_regular_message_type(self):
-        try:
-            normal_intents_idx_list = [idx for idx, i in enumerate(self.msg.intent_list) if i == Intent.NORMAL]
-            normal_intents_df = self.msg.text_df[self.msg.text_df.sidx.isin(normal_intents_idx_list)]
+        normal_intents_idx_list = [idx for idx, i in enumerate(self.msg.intent_list) if i == Intent.NORMAL]
+        normal_intents_df = self.msg.text_df[self.msg.text_df.sidx.isin(normal_intents_idx_list)]
 
-            message_type = self.__make_cmp_or_repeat(self.user.id, normal_intents_df)
+        message_type = self.__make_cmp_or_repeat(self.user.id, normal_intents_df)
 
-            if Intent.LONG_MSGs in self.msg.intent_list and MsgType.CMP.value in message_type:
-                message_type = [MsgType.BOTH_CMP_AND_REPEAT.value]
+        if Intent.LONG_MSGs in self.msg.intent_list and MsgType.CMP.value in message_type:
+            message_type = [MsgType.BOTH_CMP_AND_REPEAT.value]
 
-            return message_type
-        except:
-            logging.exception('')
-            return []
+        return message_type
 
     def __exists_bye_intent(self):
         try:
@@ -265,24 +257,20 @@ class MessageTypeChecker:
     @staticmethod
     def __has_question_only(intents):
         # except UnknownQuestionType. its regarded as meaningless
-        try:
-            exists_question = any(
-                i.value in Intent.PROPER_QUESTION_TYPES.value + [Intent.QUESTION_GENERAL_TYPE.value] for i in intents)
+        exists_question = any(
+            i.value in Intent.PROPER_QUESTION_TYPES.value + [Intent.QUESTION_GENERAL_TYPE.value] for i in intents)
 
-            # TODO is this correct? if so, change the func and vars names
-            c2 = all(
-                i.value in Intent.PROPER_QUESTION_TYPES.value + [Intent.MEANINGLESS.value,
-                                                                 Intent.QUESTION_GENERAL_TYPE.value,
-                                                                 Intent.CALL_JULLIE.value, Intent.HAHA.value,
-                                                                 Intent.STICKER.value]
-                + Intent.UNIMPORTANT_1.value + Intent.UNIMPORTANT_2.value for i in intents)
+        # TODO is this correct? if so, change the func and vars names
+        c2 = all(
+            i.value in Intent.PROPER_QUESTION_TYPES.value + [Intent.MEANINGLESS.value,
+                                                             Intent.QUESTION_GENERAL_TYPE.value,
+                                                             Intent.CALL_JULLIE.value, Intent.HAHA.value,
+                                                             Intent.STICKER.value]
+            + Intent.UNIMPORTANT_1.value + Intent.UNIMPORTANT_2.value for i in intents)
 
-            if exists_question and c2:
-                return True
-            else:
-                return False
-        except:
-            logging.exception('')
+        if exists_question and c2:
+            return True
+        else:
             return False
 
     @staticmethod

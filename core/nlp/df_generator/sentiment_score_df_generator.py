@@ -1,4 +1,3 @@
-import logging
 import pandas as pd
 import numpy as np
 
@@ -10,7 +9,11 @@ class SentimentScoreDFGenerator:
     """
 
     def __call__(self, text_df, text_kw_df):
-        # TODO: find the case where keyword_score_df is used
+        """
+        :param text_df:
+        :param text_kw_df:
+        :return:
+        """
         if text_df is None:
             return None
 
@@ -26,6 +29,7 @@ class SentimentScoreDFGenerator:
         sentiment_score_df = npdf.iloc[:, 0:3]
 
         print("\nSentiment score df\n{}".format(sentiment_score_df))
+
         return sentiment_score_df
 
     @classmethod

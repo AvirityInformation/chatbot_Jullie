@@ -1,4 +1,3 @@
-import logging
 import os
 from flask import Flask, request
 from core.webhook.message_saver import MessageSaver
@@ -24,7 +23,7 @@ def webhook():
     """
     endpoint for processing incoming messaging events
     Here we parse json data to get message info
-    :return: 
+    :return:
     """
     data = request.get_json()
 
@@ -33,47 +32,41 @@ def webhook():
 
     # check if the message is document, sticker, audio or image.
     # if document, then just mark it as seen and anymore response.
-    try:
-        if 'attachments' in data['entry'][0]['messaging'][0]['message']:
-            sender_id = data['entry'][0]['messaging'][0]['sender']['id']
+    if 'attachments' in data['entry'][0]['messaging'][0]['message']:
+        sender_id = data['entry'][0]['messaging'][0]['sender']['id']
 
-            MessageSaver.store_message(sender_id, 'ATTACHMENT')
+        MessageSaver.store_message(sender_id, 'ATTACHMENT')
 
-            mark_seen(sender_id)
-            return "ok", 200
-    except:
-        logging.exception('')
+        mark_seen(sender_id)
+        return "ok", 200
 
-    try:
-        if data["object"] == "page":
-            for entry in data["entry"]:
-                for messaging_event in entry["messaging"]:
+    if data["object"] == "page":
+        for entry in data["entry"]:
+            for messaging_event in entry["messaging"]:
 
-                    sender_id = messaging_event["sender"]["id"]
+                sender_id = messaging_event["sender"]["id"]
 
-                    mark_seen(sender_id)
+                mark_seen(sender_id)
 
-                    if messaging_event.get("message"):
+                if messaging_event.get("message"):
 
-                        message_text = str(messaging_event["message"]["text"])
+                    message_text = str(messaging_event["message"]["text"])
 
-                        if messaging_event['message'].get("quick_reply"):
-                            payload = messaging_event['message']['quick_reply']['payload']
-
-                            MessageSaver.store_message(sender_id, message_text=message_text, payload=payload)
-
-                        else:
-                            MessageSaver.store_message(sender_id, message_text=message_text)
-
-                        return "ok", 200
-                    elif messaging_event.get('postback'):
-                        payload = messaging_event['postback']['payload']
-                        message_text = messaging_event['postback']['title']
+                    if messaging_event['message'].get("quick_reply"):
+                        payload = messaging_event['message']['quick_reply']['payload']
 
                         MessageSaver.store_message(sender_id, message_text=message_text, payload=payload)
-                        return "ok", 200
-    except:
-        logging.exception('')
+
+                    else:
+                        MessageSaver.store_message(sender_id, message_text=message_text)
+
+                    return "ok", 200
+                elif messaging_event.get('postback'):
+                    payload = messaging_event['postback']['payload']
+                    message_text = messaging_event['postback']['title']
+
+                    MessageSaver.store_message(sender_id, message_text=message_text, payload=payload)
+                    return "ok", 200
 
     log('nothing in data', None, 'app.py')
     return "ok", 200

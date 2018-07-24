@@ -35,24 +35,21 @@ class IntroBot(BaseBot):
         return response_data
 
     def send_responses(self, response_data):
-        try:
-            message_ids = [i['id'] for i in self.message.message_dicts]
+        message_ids = [i['id'] for i in self.message.message_dicts]
 
-            quick_reply_data = response_data['quick_reply']
+        quick_reply_data = response_data['quick_reply']
 
-            should_send_responses_at_once = len(quick_reply_data) != 0
-            MyDB.send_responses(response_data['regular'], self.message.cluster_id, self.user.sender_id,
-                                self.user.id, MessageType.INTRO.value,
-                                should_send_responses_at_once=should_send_responses_at_once)
-            print('\nSended regular response\n', response_data['regular'])
+        should_send_responses_at_once = len(quick_reply_data) != 0
+        MyDB.send_responses(response_data['regular'], self.message.cluster_id, self.user.sender_id,
+                            self.user.id, MessageType.INTRO.value,
+                            should_send_responses_at_once=should_send_responses_at_once)
+        print('\nSended regular response\n', response_data['regular'])
 
-            if quick_reply_data:
-                models.Response.save_response_data(self.user.id, self.message.cluster_id, quick_reply_data[0],
-                                                   [quick_reply_data[2]], has_sent=True)
-                send_quick_replies(self.user.sender_id, quick_reply_data[0], quick_reply_data[1],
-                                   quick_reply_data[2])
-                print('\nSended quick replies\n', quick_reply_data)
+        if quick_reply_data:
+            models.Response.save_response_data(self.user.id, self.message.cluster_id, quick_reply_data[0],
+                                               [quick_reply_data[2]], has_sent=True)
+            send_quick_replies(self.user.sender_id, quick_reply_data[0], quick_reply_data[1],
+                               quick_reply_data[2])
+            print('\nSended quick replies\n', quick_reply_data)
 
-            models.Message.change_message_status(message_ids)
-        except:
-            logging.exception('')
+        models.Message.change_message_status(message_ids)

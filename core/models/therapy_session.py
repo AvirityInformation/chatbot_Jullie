@@ -11,6 +11,11 @@ class TherapySession:
     session_interval = 8
 
     def __init__(self, user_id):
+        """
+        To get info of session to make a instance of this class,
+        it needs to see the latest session record in db to get id, user_id and so on.
+        :param user_id:
+        """
         latest_session = models.Session.find_latest_session_data(user_id)
 
         if latest_session is None:
@@ -22,17 +27,35 @@ class TherapySession:
             self.finish_at = latest_session['finish_at']
 
     def change_status(self, status: SessionStatus):
+        """
+        Change the session status.
+        To see all status types, refer to /common/constant
+
+        Argument is a Enum
+        :param status:
+        :return:
+        """
         models.Session.update_status(self.id, status)
         self.status = status
 
     def activate(self):
+        """
+        To make a session in active status to start CCT.
+        :return:
+        """
         self.change_status(SessionStatus.active.value)
-        self.update_finish_at()
+        self.__update_finish_at()
 
     def prepare(self):
+        """
+        When intro finishes, session becomes in prepare state.
+        This means session will be activated after one more message.
+        :return:
+        """
         self.change_status(SessionStatus.prepared.value)
 
-    def update_finish_at(self):
+    def __update_finish_at(self):
+
         new_finish_at = datetime.utcnow() + timedelta(minutes=30)
         models.Session.update_finish_at(self.id, new_finish_at)
         self.finish_at = new_finish_at

@@ -1,4 +1,3 @@
-import logging
 from typing import List
 import models
 from common.util.util import send_typing_off, send_typing_on, send_message
@@ -31,24 +30,18 @@ class MyDB(object):
 
     @classmethod
     def __send_responses_with_delay(cls, contents, sender_id, user_id, cluster_id, response_type):
-        try:
-            delay = 0
+        delay = 0
 
-            for idx, content in enumerate(contents):
-                try:
-                    if idx == 0:
-                        send_message(sender_id, content)
-                        models.Response.save_response_data(user_id, cluster_id, content, response_type, has_sent=True)
-                    else:
-                        delay = cls.__update_delay(delay, len(content))
-                        models.Response.save_response_data(user_id, cluster_id, content, response_type, has_sent=False,
-                                                           delay=delay)
+        for idx, content in enumerate(contents):
+            if idx == 0:
+                send_message(sender_id, content)
+                models.Response.save_response_data(user_id, cluster_id, content, response_type, has_sent=True)
+            else:
+                delay = cls.__update_delay(delay, len(content))
+                models.Response.save_response_data(user_id, cluster_id, content, response_type, has_sent=False,
+                                                   delay=delay)
 
-                    send_typing_on(sender_id)
-                except:
-                    logging.exception('')
-        except:
-            logging.exception('')
+            send_typing_on(sender_id)
 
     @staticmethod
     def __update_delay(delay, message_length):

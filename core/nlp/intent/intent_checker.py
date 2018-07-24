@@ -9,6 +9,11 @@ from common.word_format.df_utils import Nlp_util, Df_util
 
 
 class IntentChecker:
+    """
+    This class judges intent of a message.
+    This class has to be removed in the future because of message type checker
+    """
+
     def __call__(self, text_df: DataFrame):
         intent_list = []
         if text_df is None:
@@ -55,7 +60,7 @@ class IntentChecker:
             elif self.__is_sticker_intent(df_by_sentence):
                 intent_list.append(Intent.STICKER)
 
-            elif self.__is_repeatitive(df_by_sentence):
+            elif self.__is_jullie_repeatitive(df_by_sentence):
                 intent_list.append(Intent.HATE_REPETITIVE)
 
             elif self.__is_jullie_useless(df_by_sentence):
@@ -185,39 +190,20 @@ class IntentChecker:
             return (is_subj_himself and (is_idk_what_to_do or is_want_advice)) or (
                     not exist_subj_for_first_verb and is_give_me_advice) or what_should_i_do
 
-        except Exception:
-            logging.exception('Error at: ' + str(__name__))
-            return False
-
-    @staticmethod
-    def __is_complaint_or_dissing(df):
-        try:
-            noun_list = Nlp_util.make_noun_list(df)
-            verb_list = Nlp_util.make_verb_list(df, type="normal")
-            said_you_dont_listen = Nlp_util.is_first_subject_in(["you"], noun_list,
-                                                                verb_list) and Df_util.anything_isin(
-                ["not listen", "never listen"], df["base_form"])
-            is_dissing = Df_util.anything_isin(["fuck you", "hate you"], df["base_form"])
-
-            return said_you_dont_listen or is_dissing
         except:
             logging.exception('')
             return False
 
     @staticmethod
-    def __is_repeatitive(df):
-        if df is None:
-            return False
+    def __is_complaint_or_dissing(df):
+        noun_list = Nlp_util.make_noun_list(df)
+        verb_list = Nlp_util.make_verb_list(df, type="normal")
+        said_you_dont_listen = Nlp_util.is_first_subject_in(["you"], noun_list,
+                                                            verb_list) and Df_util.anything_isin(
+            ["not listen", "never listen"], df["base_form"])
+        is_dissing = Df_util.anything_isin(["fuck you", "hate you"], df["base_form"])
 
-        is_repeat_in_message = any(df["base_form"].isin(["repeat"]))
-        if is_repeat_in_message:
-            repeat_idx = df[df["base_form"].isin(["repeat"])].index[0]
-
-            is_you_in_message = any(df.loc[:repeat_idx, "word"].isin(["you"]))
-            if is_you_in_message:
-                return True
-
-        return False
+        return said_you_dont_listen or is_dissing
 
     @staticmethod
     def __is_jullie_useless(df):
@@ -345,3 +331,18 @@ class IntentChecker:
         phrase2 = ['miss']
 
         return Nlp_util.are_words1_words2_words3_in_order(df_by_sentence, phrase1, phrase2)
+
+    @staticmethod
+    def __is_jullie_repeatitive(df):
+        if df is None:
+            return False
+
+        is_repeat_in_message = any(df["base_form"].isin(["repeat"]))
+        if is_repeat_in_message:
+            repeat_idx = df[df["base_form"].isin(["repeat"])].index[0]
+
+            is_you_in_message = any(df.loc[:repeat_idx, "word"].isin(["you"]))
+            if is_you_in_message:
+                return True
+
+        return False

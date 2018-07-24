@@ -1,7 +1,7 @@
-import logging
 import pandas as pd
 from nltk import StanfordPOSTagger
 from common.word_format.df_utils import Nlp_util, Df_util
+
 
 class PosTagger:
     @classmethod
@@ -42,22 +42,23 @@ class PosTagger:
         if any(df["word"].isin(["that", "it", "this"])):
             idx_list_of_kws = Nlp_util.get_idx_list_of_word_list(["that", "it", "this"], df["word"])
             for idx_of_kw in idx_list_of_kws:
-                if idx_of_kw == len(df)-1 or df.loc[idx_of_kw+1, "pos"] not in Nlp_util.pos_PRPs + Nlp_util.pos_NOUNs:
+                if idx_of_kw == len(df) - 1 or df.loc[
+                    idx_of_kw + 1, "pos"] not in Nlp_util.pos_PRPs + Nlp_util.pos_NOUNs:
                     df.loc[idx_of_kw, "pos"] = "NN"
                 else:
                     pass
 
         if Df_util.anything_isin(["like", "care", "guess", "need"], df["word"]):
-            idx_list_of_like = Nlp_util.get_idx_list_of_word_list(["like", "care","guess", "need"], df["word"])
+            idx_list_of_like = Nlp_util.get_idx_list_of_word_list(["like", "care", "guess", "need"], df["word"])
             for idx_of_like in idx_list_of_like:
-                if not idx_of_like == 0 and df.loc[idx_of_like-1, "pos"] in Nlp_util.pos_NOUNs+Nlp_util.pos_PRPs:
+                if not idx_of_like == 0 and df.loc[idx_of_like - 1, "pos"] in Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs:
                     df.loc[idx_of_like, "pos"] = "VB"
                 else:
                     pass
         if Df_util.anything_isin(["work"], df["word"]):
             idx_list_of_work = Nlp_util.get_idx_list_of_word_list(["work"], df["word"])
             for idx_of_work in idx_list_of_work:
-                if not idx_of_work == 0 and df.loc[idx_of_work-1, "word"] in ["this"]:
+                if not idx_of_work == 0 and df.loc[idx_of_work - 1, "word"] in ["this"]:
                     df.loc[idx_of_work, "pos"] = "VB"
                 else:
                     pass
@@ -66,15 +67,11 @@ class PosTagger:
 
     @staticmethod
     def __convert_pos_of_love(df):
-        try:
-            if any(df.word == 'love'):
-                love_rows = df[df.word == 'love']
-                for row_idx, row in love_rows.iterrows():
-                    search_range = df[(df.sidx == row.sidx) & (df.widx < row.widx)].word
-                    if any(i == 'i' for i in search_range):
-                        df.at[row_idx, 'pos'] = 'VBP'
+        if any(df.word == 'love'):
+            love_rows = df[df.word == 'love']
+            for row_idx, row in love_rows.iterrows():
+                search_range = df[(df.sidx == row.sidx) & (df.widx < row.widx)].word
+                if any(i == 'i' for i in search_range):
+                    df.at[row_idx, 'pos'] = 'VBP'
 
-            return df
-        except:
-            logging.exception('')
-            return df
+        return df

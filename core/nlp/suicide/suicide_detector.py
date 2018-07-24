@@ -1,22 +1,21 @@
-import logging
 import pandas as pd
 from common.constant.df_from_csv import SUICIDE_WORD_DF
 
 
 class SuicideDetector:
+    """
+    This class detects suicidal thought by pattern matching.
+    This class needs to be refactored to reduce nests.
+    """
     @classmethod
     def is_suicidal(cls, text_df):
-        try:
-            if text_df is None:
-                return False
+        if text_df is None:
+            return False
 
-            for sidx in set(text_df.sidx.values):
-                if cls.__has_suicidal_word(text_df, sidx):
-                    return True
-            else:
-                return False
-        except:
-            logging.exception('')
+        for sidx in set(text_df.sidx.values):
+            if cls.__has_suicidal_word(text_df, sidx):
+                return True
+        else:
             return False
 
     @classmethod
