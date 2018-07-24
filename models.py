@@ -1327,16 +1327,13 @@ class IntroPosition(Base):
     @classmethod
     def find_position_by_user_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                position = db_session \
-                    .query(cls.position) \
-                    .filter(cls.user_id == user_id).limit(1).all()
+            position = db_session \
+                .query(cls.position) \
+                .filter(cls.user_id == user_id).limit(1).all()
 
-                position = position[0][0]
+            position = position[0][0]
 
-                return position
-            except:
-                logging.exception('')
+            return position
 
     @classmethod
     def save_position(cls, position, user_id):

@@ -23,12 +23,12 @@ class OriginalDFGenerator:
 
         original_df.columns = ['sidx', 'widx', 'word', 'pos']
 
-        original_df["base_form"] = original_df.apply(lambda row: cls.create_base_form(row["word"], row["pos"]), axis=1)
+        original_df["base_form"] = original_df.apply(lambda row: cls.__create_base_form(row["word"], row["pos"]), axis=1)
 
         return original_df
 
     @staticmethod
-    def create_base_form(word, word_pos):
+    def __create_base_form(word, word_pos):
         if word_pos in Nlp_util.pos_NOUNs:
             return Word(word).lemmatize("n")
         elif word_pos in Nlp_util.pos_VERBs:

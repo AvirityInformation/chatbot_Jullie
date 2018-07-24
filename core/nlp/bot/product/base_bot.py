@@ -9,12 +9,27 @@ class BaseBot(ABC):
     """
     @abstractmethod
     def reply(self, *arguments):
+        """
+        Receive response text from create_response function and send it to users by send_responses function.
+        :param arguments:
+        :return:
+        """
         pass
 
     @abstractmethod
     def create_response(self, *arguments):
+        """
+        Make response texts
+        :param arguments:
+        :return:
+        """
         pass
 
     @abstractmethod
     def send_responses(self, *arguments):
+        """
+        Send responses to facebook send api
+        :param arguments:
+        :return:
+        """
         pass

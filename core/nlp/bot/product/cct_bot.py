@@ -31,18 +31,22 @@ class CCTBot(BaseBot):
         self.therapy_session = therapy_session
 
     def reply(self):
+        """
+        Here bot sends typing indicator on constantly because nlp processing takes long.
+        :return:
+        """
         if self.therapy_session.status == SessionStatus.prepared.value:
             self.therapy_session.activate()
 
         send_typing_on(self.user.sender_id)
 
-        self.message = self.preprocess_message()
+        self.message = self.__preprocess_message()
 
         send_typing_on(self.user.sender_id)
 
         UsersFeeling.save_feelings(self.message.text_kw_df, self.user.id)
 
-        message_types = self.analyze_message_type()
+        message_types = self.__analyze_message_type()
 
         send_typing_on(self.user.sender_id)
 
@@ -53,7 +57,7 @@ class CCTBot(BaseBot):
         self.send_responses(response_data, message_types)
         print("\nBot finished sending responses")
 
-    def preprocess_message(self):
+    def __preprocess_message(self):
         preprocessor = MessagePreprocessor()
         processed_message = preprocessor(self.message, self.user)
 
@@ -67,7 +71,7 @@ class CCTBot(BaseBot):
 
         return processed_message
 
-    def analyze_message_type(self):
+    def __analyze_message_type(self):
         msg_type_checker = MessageTypeChecker(self.user, self.message)
         message_types = msg_type_checker()
 

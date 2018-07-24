@@ -8,22 +8,23 @@ from core.nlp.response_generator.product.cct.reaction_generator import SP_I_DF
 
 class TextKwDFGenerator:
     def __call__(self, text_df):
+        """
+
+        :param text_df:
+        :return:
+        """
         w_toks = WordFormatter.df2wtoks(text_df, column_name="base_form")
 
-        try:
-            matched_list = []
-            for sidx, sent in enumerate(w_toks):
-                for widx, word in enumerate(sent):
-                    kw_type = self.__find_keywords_from_csv(text_df, sidx, widx, word)
-                    if kw_type == 'EMPHASIS':
-                        matched_list.append([sidx, widx, word, 'emphasis'])
-                    elif kw_type == 'KEYWORD':
-                        matched_list.append([sidx, widx, word, '-'])
+        matched_list = []
+        for sidx, sent in enumerate(w_toks):
+            for widx, word in enumerate(sent):
+                kw_type = self.__find_keywords_from_csv(text_df, sidx, widx, word)
+                if kw_type == 'EMPHASIS':
+                    matched_list.append([sidx, widx, word, 'emphasis'])
+                elif kw_type == 'KEYWORD':
+                    matched_list.append([sidx, widx, word, '-'])
 
-            if all('-' not in i for i in matched_list):
-                return None
-        except:
-            logging.exception('Error at: ' + str(__name__))
+        if all('-' not in i for i in matched_list):
             return None
 
         text_kw_df = pd.DataFrame(matched_list)

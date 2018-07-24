@@ -18,6 +18,13 @@ class BotFactory:
 
     @classmethod
     def create(cls, user, message, therapy_session):
+        """
+        Create a bot depending on the session situation.
+        :param user:
+        :param message:
+        :param therapy_session:
+        :return:
+        """
         args = user, message, therapy_session
         if cls.__should_create_admin_bot(user, message):
             return AdminBot(user, message, therapy_session)

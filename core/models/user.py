@@ -2,6 +2,11 @@ import models
 
 
 class User:
+    """
+    This is a simple model for user.
+    To fetch user data from db, use User class in models.py
+    """
+
     def __init__(self, user_id):
         self.__id = user_id
 
