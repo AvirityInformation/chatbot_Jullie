@@ -27,7 +27,7 @@ class MessageNormalizer:
         send_typing_on(sender_id)
 
         # make original_df with sidx, widx, word, pos tag
-        df = OriginalDFGenerator.create_original_df_by_w_toks(normalized_w_toks)
+        df = OriginalDFGenerator.create_original_df(normalized_w_toks)
 
         df = self.normalize_message_by_df(df)
 

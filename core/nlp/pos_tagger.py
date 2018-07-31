@@ -42,8 +42,8 @@ class PosTagger:
         if any(df["word"].isin(["that", "it", "this"])):
             idx_list_of_kws = Nlp_util.get_idx_list_of_word_list(["that", "it", "this"], df["word"])
             for idx_of_kw in idx_list_of_kws:
-                if idx_of_kw == len(df) - 1 or df.loc[
-                    idx_of_kw + 1, "pos"] not in Nlp_util.pos_PRPs + Nlp_util.pos_NOUNs:
+                condition = df.loc[idx_of_kw + 1, "pos"] not in Nlp_util.pos_PRPs + Nlp_util.pos_NOUNs
+                if idx_of_kw == len(df) - 1 or condition:
                     df.loc[idx_of_kw, "pos"] = "NN"
                 else:
                     pass

@@ -1,18 +1,16 @@
 from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
-import logging
 import numpy as np
 
 
 class OYSRepeatResponseGenerator(BaseResponseGenerator):
+    """
+    OYS(On Your Side)
+    """
     def __call__(self):
-        try:
-            responses = self.__create_oys_after_repeat()
-            self.response_data['regular'] = responses
+        responses = self.__create_oys_after_repeat()
+        self.response_data['regular'] = responses
 
-            return self.response_data
-        except:
-            logging.exception('')
-            return self.response_data
+        return self.response_data
 
     def __create_oys_after_repeat(self):
         options = [

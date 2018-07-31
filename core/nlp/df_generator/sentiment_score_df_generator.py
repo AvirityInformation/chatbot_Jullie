@@ -8,8 +8,10 @@ class SentimentScoreDFGenerator:
     This class must be integrated to preprocessor
     """
 
-    def __call__(self, text_df, text_kw_df):
+    def __call__(self, text_df: pd.DataFrame, text_kw_df: pd.DataFrame):
         """
+        this method creates a df containing positive/negative score of each sentence.
+
         :param text_df:
         :param text_kw_df:
         :return:

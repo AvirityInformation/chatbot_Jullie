@@ -4,17 +4,16 @@ from abc import ABC, abstractmethod
 
 
 class BaseResponseGenerator(ABC):
+    """
+    This class is a base class for ResponseGenerator classes which creates responses, handles session status and so on.
+    """
     response_data_format = {'regular': [], 'quick_reply': []}
 
     def __init__(self, user, message, message_type=None):
-        try:
-            self.user = user
-            self.message = message
-            self.response_data = copy.deepcopy(BaseResponseGenerator.response_data_format)
-            self.message_type = message_type
-        except:
-            logging.exception('')
-
+        self.user = user
+        self.message = message
+        self.response_data = copy.deepcopy(BaseResponseGenerator.response_data_format)
+        self.message_type = message_type
 
     @abstractmethod
     def __call__(self, **arguments):

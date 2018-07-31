@@ -25,6 +25,13 @@ class IntroGenerator(object):
 
     @classmethod
     def generate_intro_responses(cls, message_dicts, user):
+        """
+        This method creates response for introduction
+
+        :param message_dicts:
+        :param user:
+        :return:
+        """
         message = message_dicts[0]['text']
 
         if user.status == US.GET_STARTED.value:
