@@ -1,51 +1,36 @@
-import logging
-import numpy as np
 import pandas as pd
 from random import shuffle
 import models
-from common.constant.df_from_csv import LISTENING_DF, SP_I_DF, SP_O_DF
+from common.constant.df_from_csv import SP_I_DF, SP_O_DF
 from common.constant.message_type import MessageType
 from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
 
 
 class ReactionResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates reactions like 'I am here for you...'
+    """
+
     def __call__(self):
-        try:
-            responses = self.generate_reaction_by_type(self.user.id, self.message_type, self.message.text_kw_df)
+        responses = self.__generate_reaction_by_type(self.user.id, self.message_type, self.message.text_kw_df)
 
-            self.set_regular_response(responses)
+        self.set_regular_response(responses)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     @classmethod
-    def generate_reaction_by_type(cls, user_id, reaction_type, text_kw_df):
-        try:
-            used_reaction_numbers_list = models.Reaction.find_used_reaction_number(user_id, reaction_type)
+    def __generate_reaction_by_type(cls, user_id, reaction_type, text_kw_df):
+        used_reaction_numbers_list = models.Reaction.find_used_reaction_number(user_id, reaction_type)
 
-            if reaction_type == MessageType.SPECIAL.value:
-                responses = [
-                    cls.__find_special_reaction(used_reaction_numbers_list, text_kw_df, user_id, reaction_type)
-                ]
-            else:
-                responses = [
-                    cls.__find_basic_reaction(used_reaction_numbers_list, user_id, reaction_type)]
+        if reaction_type == MessageType.SPECIAL.value:
+            responses = [
+                cls.__find_special_reaction(used_reaction_numbers_list, text_kw_df, user_id, reaction_type)
+            ]
+        else:
+            responses = [
+                cls.__find_basic_reaction(used_reaction_numbers_list, user_id, reaction_type)]
 
-            return responses
-        except:
-            logging.exception('')
-            return []
-
-    @staticmethod
-    def generate_listening():
-        try:
-            listening = LISTENING_DF[LISTENING_DF.type == 1].text.values
-            response_list = [np.random.choice(listening, 1)[0]]
-            return response_list
-        except:
-            logging.exception('')
-            return []
+        return responses
 
     @classmethod
     def __find_special_reaction(cls, used_reaction_numbers_list, text_kw_df, user_id, reaction_type):
@@ -77,37 +62,33 @@ class ReactionResponseGenerator(BaseResponseGenerator):
 
     @classmethod
     def __find_basic_reaction(cls, used_reaction_numbers_list, user_id, reaction_type):
-        try:
-            used_reaction_numbers_list = list(set(used_reaction_numbers_list))
+        used_reaction_numbers_list = list(set(used_reaction_numbers_list))
 
-            rdf = pd.read_csv('./csv_files/reactions.csv')
+        rdf = pd.read_csv('./csv_files/reactions.csv')
 
-            target_id_list = rdf[rdf['type'] == reaction_type].index.tolist()
+        target_id_list = rdf[rdf['type'] == reaction_type].index.tolist()
 
-            if any(i not in target_id_list for i in used_reaction_numbers_list):
-                # In this case, reactions.csv has changed. so set all reations status = 1
-                models.Reaction.enable_reaction_number(user_id, reaction_type, used_reaction_numbers_list)
-                candidate_id_list = target_id_list
+        if any(i not in target_id_list for i in used_reaction_numbers_list):
+            # In this case, reactions.csv has changed. so set all reations status = 1
+            models.Reaction.enable_reaction_number(user_id, reaction_type, used_reaction_numbers_list)
+            candidate_id_list = target_id_list
 
-            elif len(used_reaction_numbers_list) == len(target_id_list):
-                models.Reaction.enable_reaction_number(user_id, reaction_type)
-                candidate_id_list = used_reaction_numbers_list
+        elif len(used_reaction_numbers_list) == len(target_id_list):
+            models.Reaction.enable_reaction_number(user_id, reaction_type)
+            candidate_id_list = used_reaction_numbers_list
 
-            else:
-                candidate_id_list = rdf[
-                    (rdf['type'] == reaction_type)
-                    & ~(rdf.index.isin(used_reaction_numbers_list))
-                    ].index.tolist()
+        else:
+            candidate_id_list = rdf[
+                (rdf['type'] == reaction_type)
+                & ~(rdf.index.isin(used_reaction_numbers_list))
+                ].index.tolist()
 
-            shuffle(candidate_id_list)
-            r_id = candidate_id_list[0]
+        shuffle(candidate_id_list)
+        r_id = candidate_id_list[0]
 
-            models.Reaction.disable_reaction_number(user_id, r_id, reaction_type)
+        models.Reaction.disable_reaction_number(user_id, r_id, reaction_type)
 
-            r = rdf[rdf.index == r_id].reaction.values[0]
-            r = r.replace('\\n', '\n')
+        r = rdf[rdf.index == r_id].reaction.values[0]
+        r = r.replace('\\n', '\n')
 
-            return r
-        except:
-            logging.exception('')
-            return ''
+        return r

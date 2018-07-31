@@ -1,19 +1,18 @@
 import numpy as np
-
 from common.constant.string_constant import StringConstant
 from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
 
 
 class NotListeningResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates responses for users saying that bot is not listening to user
+    """
     def __call__(self):
-        try:
-            responses = self.__select_responses_for_complaint()
+        responses = self.__select_responses_for_complaint()
 
-            self.response_data['regular'] = responses
+        self.response_data['regular'] = responses
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     @staticmethod
     def __select_responses_for_complaint():

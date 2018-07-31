@@ -4,21 +4,19 @@ from core.nlp.response_generator.product.base.base_response_generator import Bas
 
 
 class AskCommentResponseGenerator(BaseResponseGenerator):
+    """
+    By this class, bot ask for commend about session.
+    """
+
     def __call__(self, therapy_session):
-        try:
-            therapy_session.change_status(SessionStatus.asking_comment.value)
+        therapy_session.change_status(SessionStatus.asking_comment.value)
 
-            self.response_data = self.__create_response_for_asking_comment()
+        self.response_data = self.__create_response_for_asking_comment()
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     def __create_response_for_asking_comment(self):
-        try:
-            responses = StringConstant.ask_comment_end_responses.value
-            self.set_regular_response(responses)
+        responses = StringConstant.ask_comment_end_responses.value
+        self.set_regular_response(responses)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data

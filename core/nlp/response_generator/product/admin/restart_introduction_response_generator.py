@@ -3,10 +3,10 @@ from scripts.delete_user_from_db import delete_all_rows_of_a_user
 
 
 class RestartIntroductionResposneGenerator(BaseResponseGenerator):
+    """
+    This class deal with admin command RESTART_INTRODUCTION
+    """
     def __call__(self):
-        try:
-            delete_all_rows_of_a_user(self.user.id, from_messenger=True)
+        delete_all_rows_of_a_user(self.user.id, from_messenger=True)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data

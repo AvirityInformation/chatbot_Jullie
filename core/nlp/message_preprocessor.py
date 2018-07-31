@@ -16,7 +16,7 @@ class MessagePreprocessor:
             return message
 
         w_toks = WordFormatter.MsgDict2WToks(message.message_dicts)
-        message.original_df = OriginalDFGenerator.create_original_df_by_w_toks(w_toks)
+        message.original_df = OriginalDFGenerator.create_original_df(w_toks)
 
         message_normalizer = MessageNormalizer()
         message.text_df = message_normalizer(message.message_dicts, user.sender_id)

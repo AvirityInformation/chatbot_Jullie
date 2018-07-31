@@ -4,7 +4,6 @@ from common.constant.df_from_csv import STOP_WORD_LIST, STICKER_DF
 from common.constant.intent_type import Intent
 from core.nlp.question import question
 from common.dialogflow.dialogflow import request_to_apiai
-import logging
 from common.word_format.df_utils import Nlp_util, Df_util
 
 
@@ -15,6 +14,12 @@ class IntentChecker:
     """
 
     def __call__(self, text_df: DataFrame):
+        """
+        This method check the intent of a message
+
+        :param text_df:
+        :return:
+        """
         intent_list = []
         if text_df is None:
             return [Intent.MEANINGLESS]
@@ -166,33 +171,28 @@ class IntentChecker:
 
     @classmethod
     def __is_no_idea(cls, df):
-        try:
-            df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
-            noun_list = Nlp_util.make_noun_list(df)
-            verb_list = Nlp_util.make_verb_list(df, type="normal")
-            is_subj_himself = Nlp_util.is_first_subject_in(["i"], noun_list, verb_list)
-            exist_subj_for_first_verb = Nlp_util.exist_subj_for_first_verb(noun_list, verb_list)
+        df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
+        noun_list = Nlp_util.make_noun_list(df)
+        verb_list = Nlp_util.make_verb_list(df, type="normal")
+        is_subj_himself = Nlp_util.is_first_subject_in(["i"], noun_list, verb_list)
+        exist_subj_for_first_verb = Nlp_util.exist_subj_for_first_verb(noun_list, verb_list)
 
-            is_idk_what_to_do = Df_util.anything_isin({"do not know", "not sure", "have no idea"},
-                                                      df_ex_adverb["base_form"]) and Df_util.anything_isin(
-                {"what to do", "how to do", "what to deal", "how to deal"}, df_ex_adverb["base_form"])
+        is_idk_what_to_do = Df_util.anything_isin({"do not know", "not sure", "have no idea"},
+                                                  df_ex_adverb["base_form"]) and Df_util.anything_isin(
+            {"what to do", "how to do", "what to deal", "how to deal"}, df_ex_adverb["base_form"])
 
-            is_want_advice = Df_util.anything_isin({"want", "need", "give me"},
-                                                   df_ex_adverb["base_form"]) and Df_util.anything_isin(
-                {"advice", "suggestion"}, df_ex_adverb["word"])
+        is_want_advice = Df_util.anything_isin({"want", "need", "give me"},
+                                               df_ex_adverb["base_form"]) and Df_util.anything_isin(
+            {"advice", "suggestion"}, df_ex_adverb["word"])
 
-            is_give_me_advice = Df_util.anything_isin({"need", "want", "give me"},
-                                                      df_ex_adverb["base_form"]) and Df_util.anything_isin(
-                {"advice", "suggestion"}, df_ex_adverb["word"])
+        is_give_me_advice = Df_util.anything_isin({"need", "want", "give me"},
+                                                  df_ex_adverb["base_form"]) and Df_util.anything_isin(
+            {"advice", "suggestion"}, df_ex_adverb["word"])
 
-            what_should_i_do = Nlp_util.are_words1_words2_words3_in_order(df_ex_adverb, ["what"], ["should"], ["i"])
+        what_should_i_do = Nlp_util.are_words1_words2_words3_in_order(df_ex_adverb, ["what"], ["should"], ["i"])
 
-            return (is_subj_himself and (is_idk_what_to_do or is_want_advice)) or (
-                    not exist_subj_for_first_verb and is_give_me_advice) or what_should_i_do
-
-        except:
-            logging.exception('')
-            return False
+        return (is_subj_himself and (is_idk_what_to_do or is_want_advice)) or (
+                not exist_subj_for_first_verb and is_give_me_advice) or what_should_i_do
 
     @staticmethod
     def __is_complaint_or_dissing(df):
@@ -207,24 +207,20 @@ class IntentChecker:
 
     @staticmethod
     def __is_jullie_useless(df):
-        try:
-            if df is None:
-                return False
-
-            c1 = Nlp_util.are_words1_words2_words3_in_order(df,
-                                                            ["you", "this"],
-                                                            ["be not", "be never"],
-                                                            ["helpful", "help", "helping"])
-
-            c2 = Nlp_util.are_words1_words2_words3_in_order(df,
-                                                            ["you"],
-                                                            ["be"],
-                                                            ['useless', 'helpless'])
-
-            return c1 or c2
-        except:
-            logging.exception('')
+        if df is None:
             return False
+
+        c1 = Nlp_util.are_words1_words2_words3_in_order(df,
+                                                        ["you", "this"],
+                                                        ["be not", "be never"],
+                                                        ["helpful", "help", "helping"])
+
+        c2 = Nlp_util.are_words1_words2_words3_in_order(df,
+                                                        ["you"],
+                                                        ["be"],
+                                                        ['useless', 'helpless'])
+
+        return c1 or c2
 
     @staticmethod
     def __is_meaningless_sent(df):
@@ -274,8 +270,10 @@ class IntentChecker:
         word2_1 = ['anxiety']
         word2_2 = ['have', 'having', 'had', 'feel', 'feeling']
 
-        return Nlp_util.are_words1_words2_words3_in_order(df_by_sentence, word1_1, word1_2) \
-               or Nlp_util.are_words1_words2_words3_in_order(df_by_sentence, word2_1, word2_2)
+        pattern_1 = Nlp_util.are_words1_words2_words3_in_order(df_by_sentence, word1_1, word1_2)
+        pattern_2 = Nlp_util.are_words1_words2_words3_in_order(df_by_sentence, word2_1, word2_2)
+
+        return pattern_1 or pattern_2
 
     @classmethod
     def __is_lonely(cls, df_by_sentence: DataFrame):

@@ -3,6 +3,16 @@ import models
 
 
 class MessageRetriever:
+    """
+    This class retrieves messages from database so that messages are passed into queue.
+    There are several conditions when messages are enqueued.
+
+    The conditions are
+    1. Intro users are handled fast
+    2. Users with messages that were sent 20 seconds or more ago.
+    3. Users whose messaegs are not in worker process.
+    """
+
     @classmethod
     def fetch_messages_to_process(cls):
         models.Message.handle_failed_messages()

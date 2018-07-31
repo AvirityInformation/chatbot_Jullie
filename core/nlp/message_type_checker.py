@@ -1,4 +1,3 @@
-import logging
 import models
 from common.constant.intent_type import Intent
 from common.constant.user_status import UserStatus
@@ -12,6 +11,10 @@ from common.word_format.word_formatter import WordFormatter
 
 
 class MessageTypeChecker:
+    """
+    This class checks the type of message.
+    """
+
     def __init__(self, user, msg):
         self.user = user
         self.msg = msg
@@ -108,42 +111,36 @@ class MessageTypeChecker:
         return message_type
 
     def __exists_bye_intent(self):
-        try:
-            return any(i.value in Intent.BYE_INTENTS.value for i in self.msg.intent_list)
-        except:
-            logging.exception('')
-            return False
+        return any(i.value in Intent.BYE_INTENTS.value for i in self.msg.intent_list)
 
     def __modify_message_types_by_bye_intents(self, message_type):
-        try:
-            types_uncompatible_with_bye_intents = \
-                [MsgType.LABELING.value, MsgType.CQL.value] + MsgType.reaction_type_list.value
+        types_uncompatible_with_bye_intents = \
+            [MsgType.LABELING.value, MsgType.CQL.value] + MsgType.reaction_type_list.value
 
-            message_type = [i for i in message_type if i not in types_uncompatible_with_bye_intents]
+        message_type = [i for i in message_type if i not in types_uncompatible_with_bye_intents]
 
-            return message_type
-        except:
-            logging.exception('')
-            return message_type
+        return message_type
 
     def __add_QR_by_past_response_types(self, message_type_list):
-        try:
-            if any(message_type in MsgType.QR_UNNEEDED.value for message_type in message_type_list):
-                return message_type_list
-
-            past_3_response_types = models.Response.find_past_3_response_types(self.user.id)
-
-            exists_recent_QR = MsgType.QR.value in past_3_response_types
-            exists_strong_negative = any([i <= -150 for i in
-                                          self.msg.sentiment_score_df.nscore.values]) if self.msg.sentiment_score_df.nscore is not None else False
-
-            if not exists_recent_QR or exists_strong_negative:
-                message_type_list.insert(0, MsgType.QR.value)
-
+        if any(message_type in MsgType.QR_UNNEEDED.value for message_type in message_type_list):
             return message_type_list
-        except:
-            logging.exception('')
-            return message_type_list
+
+        past_3_response_types = models.Response.find_past_3_response_types(self.user.id)
+
+        exists_recent_QR = MsgType.QR.value in past_3_response_types
+
+        if not exists_recent_QR or self.__exists_strong_negative():
+            message_type_list.insert(0, MsgType.QR.value)
+
+        return message_type_list
+
+    def __exists_strong_negative(self):
+        if self.msg.sentiment_score_df.nscore is not None:
+            exists_strong_negative = any([i <= -150 for i in self.msg.sentiment_score_df.nscore.values])
+        else:
+            exists_strong_negative = False
+
+        return exists_strong_negative
 
     @staticmethod
     def __make_cmp_or_repeat(user_id, text_df):
@@ -154,43 +151,29 @@ class MessageTypeChecker:
 
     @classmethod
     def __is_cmp_makeable(cls, text_df, user_id):
-        try:
-            last_response_type_list = models.Response.fetch_last_response_type_list(user_id)
-            print("\nLast response type\n{}".format(last_response_type_list))
+        last_response_type_list = models.Response.fetch_last_response_type_list(user_id)
+        print("\nLast response type\n{}".format(last_response_type_list))
 
-            if MsgType.CMP.value in last_response_type_list:
-                return False
+        if MsgType.CMP.value in last_response_type_list:
+            return False
 
-            if any(text_df.base_form.isin(WORD_LIST_FOR_CMP.word.tolist())):
-                return True
-            else:
-                return False
-
-        except:
-            logging.exception('')
+        if any(text_df.base_form.isin(WORD_LIST_FOR_CMP.word.tolist())):
+            return True
+        else:
             return False
 
     def __is_in_intent_list(self, intent):
-        try:
-            return intent in self.msg.intent_list
-        except:
-            logging.exception('')
-            return False
+        return intent in self.msg.intent_list
 
     @staticmethod
     def __has_intent_from_api_only(intents):
-        try:
-            if all(i == Intent.MEANINGLESS for i in intents):
-                return False
-            elif all(i.value in
-                     Intent.UNIMPORTANT_1.value + Intent.UNIMPORTANT_2.value + [Intent.MEANINGLESS.value]
-                     for i in intents):
-                return True
-            else:
-                return False
-
-        except:
-            logging.exception('')
+        if all(i == Intent.MEANINGLESS for i in intents):
+            return False
+        elif all(i.value in
+                 Intent.UNIMPORTANT_1.value + Intent.UNIMPORTANT_2.value + [Intent.MEANINGLESS.value]
+                 for i in intents):
+            return True
+        else:
             return False
 
     @staticmethod
@@ -203,25 +186,21 @@ class MessageTypeChecker:
 
     @classmethod
     def __is_previous_msg_cmp_makeable(cls, user_id):
-        try:
-            previous_msg = models.Message.fetch_previous_msg(user_id)
-            if len(previous_msg) == 0:
-                return False
+        previous_msg = models.Message.fetch_previous_msg(user_id)
+        if len(previous_msg) == 0:
+            return False
 
-            w_toks = WordFormatter.stoks2wtoks([previous_msg])
+        w_toks = WordFormatter.stoks2wtoks([previous_msg])
 
-            message_normalizer = MessageNormalizer()
-            df = message_normalizer(w_toks, None, from_preprocessor=False)
+        message_normalizer = MessageNormalizer()
+        df = message_normalizer(w_toks, None, from_preprocessor=False)
 
-            target_pos = Nlp_util.pos_VERBs + Nlp_util.pos_ADVERBs + Nlp_util.pos_ADJECTIVEs
-            target_word_df = df[df.pos.isin(target_pos)]
+        target_pos = Nlp_util.pos_VERBs + Nlp_util.pos_ADVERBs + Nlp_util.pos_ADJECTIVEs
+        target_word_df = df[df.pos.isin(target_pos)]
 
-            if any(target_word_df.base_form.isin(WORD_LIST_FOR_CMP.word.tolist())):
-                return True
-            else:
-                return False
-        except:
-            logging.exception('')
+        if any(target_word_df.base_form.isin(WORD_LIST_FOR_CMP.word.tolist())):
+            return True
+        else:
             return False
 
     @classmethod

@@ -1,19 +1,18 @@
-import logging
 import numpy as np
 from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
 
 
 class OYSMeaninglessInARowResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates OYS(On Your Side) responses for meaningless messages like 'yeah'
+    """
+
     def __call__(self):
-        try:
-            responses = self.__create_oys_after_meaningless_in_a_row()
+        responses = self.__create_oys_after_meaningless_in_a_row()
 
-            self.response_data['regular'] = responses
+        self.response_data['regular'] = responses
 
-            return self.response_data
-        except:
-            logging.exception('')
-            return self.response_data
+        return self.response_data
 
     def __create_oys_after_meaningless_in_a_row(self):
         qr = [
@@ -37,7 +36,9 @@ class OYSMeaninglessInARowResponseGenerator(BaseResponseGenerator):
             ["again, you just come talk to me whenever you want, never feel forced🤓"],
             ["i think you need little break now..just come back whenever you would like to😋"]
         ]
+
         np.random.shuffle(qr)
         np.random.shuffle(oys)
         np.random.shuffle(encourage)
+
         return qr[0] + oys[0] + encourage[0]

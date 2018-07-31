@@ -1,4 +1,3 @@
-import logging
 from common.constant.message_type import MessageType as MsgType
 from core.nlp.response_generator.product.cct.OYS_Meaningless_In_A_Row_response_generator import \
     OYSMeaninglessInARowResponseGenerator
@@ -36,7 +35,6 @@ from core.nlp.response_generator.product.cct.repetitive_response_generator impor
 from core.nlp.response_generator.product.cct.suicide_response_generator import SuicideResponseGenerator
 from core.nlp.response_generator.product.cct.unimportant_response_generator import UnimportantResponseGenerator
 from core.nlp.response_generator.product.cct.no_friends_response_generator import ForNoFriendsResponseGenerator
-from core.nlp.response_generator.product.reflection.ask_feedback_response_generator import AskFeedbackResponseGenerator
 from core.nlp.response_generator.product.cct.both_cmp_and_repeat_generator import BothCmpANdRepeatResponseGenerator
 
 
@@ -47,82 +45,77 @@ class UnknownError:
 class CCTResponseGeneratorFactory(BaseResponseGeneratorFactory):
     @staticmethod
     def create(user, message, msg_type):
-        try:
-            print('\nmessage_type:\n', msg_type)
-            args = user, message, msg_type
+        print('\nmessage_type:\n', msg_type)
+        args = user, message, msg_type
 
-            if msg_type == MsgType.SUICIDE.value:
-                return SuicideResponseGenerator(*args)
-            elif msg_type == MsgType.QUESTION.value:
-                return QuestionResponseGenerator(*args)
-            elif msg_type == MsgType.QR.value:
-                return QuickResponseGenerator(*args)
-            elif msg_type == MsgType.REPEAT.value:
-                return RepeatResponseGenerator(*args)
-            elif msg_type == MsgType.CMP.value:
-                return CMPResponseGenerator(*args)
-            elif msg_type == MsgType.NO_FRIENDS.value:
-                return ForNoFriendsResponseGenerator(*args)
-            elif msg_type == MsgType.CMP_FOR_PREVIOUS_SENT.value:
-                return PreviousSentCMPResponseGenerator(*args)
-            elif msg_type == MsgType.ASK_TO_FINISH.value:
-                return AskFinishResponseGenerator(*args)
-            elif msg_type == MsgType.OYS_AFTER_REPEAT.value:
-                return OYSRepeatResponseGenerator(*args)
-            elif msg_type == MsgType.OYS_AFTER_CMP.value:
-                return OYSCMPResponseGenerator(*args)
-            elif msg_type == MsgType.LABELING.value:
-                return LabelingResponseGenerator(*args)
-            elif msg_type == MsgType.CQL.value:
-                return CQLResponseGenerator(*args)
-            elif msg_type in MsgType.reaction_type_list.value:
-                return ReactionResponseGenerator(*args)
-            elif msg_type in MsgType.LIS.value:
-                return LISResponseGenerator(*args)
-            elif msg_type == MsgType.HATE_REPEATITIVE.value:
-                return RepetitiveResponseGenerator(*args)
-            elif msg_type == MsgType.JULLIE_USELESS.value:
-                return BotUselessResponseGenerator(*args)
-            elif msg_type == MsgType.NOT_LISTENING.value:
-                return NotListeningResponseGenerator(*args)
-            elif msg_type == MsgType.NO_IDEA.value:
-                return NoIdeaResponseGenerator(*args)
-            elif msg_type == MsgType.QUESTION_NO_IDEA.value:
-                return QuestionNoIdeaResponseGenerator(*args)
-            elif msg_type == MsgType.GENERAL_QUESTION_TYPE.value:
-                return GeneralQuestionResponseGenerator(*args)
-            elif msg_type == MsgType.NEED_HELP.value:
-                return NeedHelpResponseGenerator(*args)
-            elif msg_type == MsgType.COMPLAINT_OR_DISSING.value:
-                return DisrespectResponseGenerator(*args)
-            elif msg_type == MsgType.UNIMPORTANT.value:
-                return UnimportantResponseGenerator(*args)
-            elif msg_type == MsgType.CANT_GET_ATTENTION_FROM_BF.value:
-                return BfAttentionResponseGenerator(*args)
-            elif msg_type == MsgType.LIKE_SOMEONE.value:
-                return LikeSomeoneResponseGenerator(*args)
-            elif msg_type == MsgType.LACK_OF_CONFIDENCE.value:
-                return LackConfidenceResponseGenerator(*args)
-            elif msg_type == MsgType.ABOUT_BREAKUP.value:
-                return AboutBreakupResponseGenerator(*args)
-            elif msg_type == MsgType.ASK_FEED_BACK.value:
-                return AskFeedbackResponseGenerator(*args)
-            elif msg_type == MsgType.OYS_MEANINGLESS_IN_A_ROW.value:
-                return OYSMeaninglessInARowResponseGenerator(*args)
-            elif msg_type == MsgType.ANXIOUS.value:
-                return AnxiousResponseGenerator(*args)
-            elif msg_type == MsgType.LONELY.value:
-                return LonelyResponseGenerator(*args)
-            elif msg_type == MsgType.CALL_ME_NAMES.value:
-                return CallMeNamesResponseGenerator(*args)
-            elif msg_type == MsgType.MONEY.value:
-                return MoneyResponseGenerator(*args)
-            elif msg_type == MsgType.BOTH_CMP_AND_REPEAT.value:
-                return BothCmpANdRepeatResponseGenerator(*args)
+        if msg_type == MsgType.SUICIDE.value:
+            return SuicideResponseGenerator(*args)
+        elif msg_type == MsgType.QUESTION.value:
+            return QuestionResponseGenerator(*args)
+        elif msg_type == MsgType.QR.value:
+            return QuickResponseGenerator(*args)
+        elif msg_type == MsgType.REPEAT.value:
+            return RepeatResponseGenerator(*args)
+        elif msg_type == MsgType.CMP.value:
+            return CMPResponseGenerator(*args)
+        elif msg_type == MsgType.NO_FRIENDS.value:
+            return ForNoFriendsResponseGenerator(*args)
+        elif msg_type == MsgType.CMP_FOR_PREVIOUS_SENT.value:
+            return PreviousSentCMPResponseGenerator(*args)
+        elif msg_type == MsgType.ASK_TO_FINISH.value:
+            return AskFinishResponseGenerator(*args)
+        elif msg_type == MsgType.OYS_AFTER_REPEAT.value:
+            return OYSRepeatResponseGenerator(*args)
+        elif msg_type == MsgType.OYS_AFTER_CMP.value:
+            return OYSCMPResponseGenerator(*args)
+        elif msg_type == MsgType.LABELING.value:
+            return LabelingResponseGenerator(*args)
+        elif msg_type == MsgType.CQL.value:
+            return CQLResponseGenerator(*args)
+        elif msg_type in MsgType.reaction_type_list.value:
+            return ReactionResponseGenerator(*args)
+        elif msg_type in MsgType.LIS.value:
+            return LISResponseGenerator(*args)
+        elif msg_type == MsgType.HATE_REPEATITIVE.value:
+            return RepetitiveResponseGenerator(*args)
+        elif msg_type == MsgType.JULLIE_USELESS.value:
+            return BotUselessResponseGenerator(*args)
+        elif msg_type == MsgType.NOT_LISTENING.value:
+            return NotListeningResponseGenerator(*args)
+        elif msg_type == MsgType.NO_IDEA.value:
+            return NoIdeaResponseGenerator(*args)
+        elif msg_type == MsgType.QUESTION_NO_IDEA.value:
+            return QuestionNoIdeaResponseGenerator(*args)
+        elif msg_type == MsgType.GENERAL_QUESTION_TYPE.value:
+            return GeneralQuestionResponseGenerator(*args)
+        elif msg_type == MsgType.NEED_HELP.value:
+            return NeedHelpResponseGenerator(*args)
+        elif msg_type == MsgType.COMPLAINT_OR_DISSING.value:
+            return DisrespectResponseGenerator(*args)
+        elif msg_type == MsgType.UNIMPORTANT.value:
+            return UnimportantResponseGenerator(*args)
+        elif msg_type == MsgType.CANT_GET_ATTENTION_FROM_BF.value:
+            return BfAttentionResponseGenerator(*args)
+        elif msg_type == MsgType.LIKE_SOMEONE.value:
+            return LikeSomeoneResponseGenerator(*args)
+        elif msg_type == MsgType.LACK_OF_CONFIDENCE.value:
+            return LackConfidenceResponseGenerator(*args)
+        elif msg_type == MsgType.ABOUT_BREAKUP.value:
+            return AboutBreakupResponseGenerator(*args)
+        elif msg_type == MsgType.OYS_MEANINGLESS_IN_A_ROW.value:
+            return OYSMeaninglessInARowResponseGenerator(*args)
+        elif msg_type == MsgType.ANXIOUS.value:
+            return AnxiousResponseGenerator(*args)
+        elif msg_type == MsgType.LONELY.value:
+            return LonelyResponseGenerator(*args)
+        elif msg_type == MsgType.CALL_ME_NAMES.value:
+            return CallMeNamesResponseGenerator(*args)
+        elif msg_type == MsgType.MONEY.value:
+            return MoneyResponseGenerator(*args)
+        elif msg_type == MsgType.BOTH_CMP_AND_REPEAT.value:
+            return BothCmpANdRepeatResponseGenerator(*args)
 
-            elif msg_type == MsgType.MISSING.value:
-                return MissingResponseGenerator(*args)
-            else:
-                raise UnknownError
-        except:
-            logging.exception('Unknown Message Type is Found')
+        elif msg_type == MsgType.MISSING.value:
+            return MissingResponseGenerator(*args)
+        else:
+            raise UnknownError

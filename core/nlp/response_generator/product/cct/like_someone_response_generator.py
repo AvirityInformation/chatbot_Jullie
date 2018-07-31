@@ -3,15 +3,15 @@ import numpy as np
 
 
 class LikeSomeoneResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates responses for users who say like someone
+    """
     def __call__(self):
-        try:
-            response = self.__create_response_for_like_someone()
+        response = self.__create_response_for_like_someone()
 
-            self.set_regular_response(response)
+        self.set_regular_response(response)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     @classmethod
     def __create_response_for_like_someone(cls):

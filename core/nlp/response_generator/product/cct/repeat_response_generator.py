@@ -1,4 +1,3 @@
-import logging
 import numpy as np
 import pandas as pd
 from heapq import nlargest
@@ -17,130 +16,127 @@ class UnknownError(Exception):
 
 
 class RepeatResponseGenerator(BaseResponseGenerator):
+    """
+    This functioon create repeat of users' messages.
+    """
+
     def __call__(self):
-        try:
-            print("\ntext_kw_df\n{}".format(self.message.text_kw_df))
+        print("\ntext_kw_df\n{}".format(self.message.text_kw_df))
 
-            repeatable_sent_sidx = self.__select_repeatable_sent_sidx(self.message.text_df, self.message.intent_list)
-            if len(repeatable_sent_sidx) == 0:
-                result_list = ReactionGenerator.generate_listening()
-                self.response_data['regular'] = result_list
-                return self.response_data
-
-            sidx_to_repeat = self.__select_sidx_to_repeat(self.message.text_df, self.message.sentiment_score_df,
-                                                          repeatable_sent_sidx)
-            print("\nSidx to repeat\n{}".format(sidx_to_repeat))
-
-            if sidx_to_repeat:
-                result_list = self.__generate_repeat(self.message.text_df, self.message.text_kw_df, sidx_to_repeat)
-                print("\nREPEAT RESULT\n{}".format(result_list))
-
-                if not result_list:
-                    result_list = ReactionGenerator.generate_listening()
-            else:
-                result_list = ReactionGenerator.generate_listening()
-
+        repeatable_sent_sidx = self.__select_repeatable_sent_sidx(self.message.text_df, self.message.intent_list)
+        if len(repeatable_sent_sidx) == 0:
+            result_list = ReactionGenerator.generate_listening()
             self.response_data['regular'] = result_list
-
             return self.response_data
 
-        except:
-            logging.exception('')
-            responses = ReactionGenerator.generate_listening()
-            self.response_data['regular'] = responses
-            return self.response_data
+        sidx_to_repeat = self.__select_sidx_to_repeat(self.message.text_df, self.message.sentiment_score_df,
+                                                      repeatable_sent_sidx)
+        print("\nSidx to repeat\n{}".format(sidx_to_repeat))
+
+        if sidx_to_repeat:
+            result_list = self.__generate_repeat(self.message.text_df, self.message.text_kw_df, sidx_to_repeat)
+            print("\nREPEAT RESULT\n{}".format(result_list))
+
+            if not result_list:
+                result_list = ReactionGenerator.generate_listening()
+        else:
+            result_list = ReactionGenerator.generate_listening()
+
+        self.response_data['regular'] = result_list
+
+        return self.response_data
 
     @classmethod
     def __generate_repeat(cls, text_df, text_kw_df, sidx_to_repeat):
-        try:
-            repeat_list = []
-            for idx, sidx in enumerate(sidx_to_repeat):
-                target_df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
+        repeat_list = []
+        for idx, sidx in enumerate(sidx_to_repeat):
+            target_df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
 
-                fixed_df = cls.__replace_word_by_csv(target_df)
+            fixed_df = cls.__replace_word_by_csv(target_df)
 
-                # TODO fix the convert_df_to_str() so that it would not need [1:] part.
-                repeat_text = WordFormatter.Df2Str(fixed_df)[1:]
+            # TODO fix the convert_df_to_str() so that it would not need [1:] part.
+            repeat_text = WordFormatter.Df2Str(fixed_df)[1:]
 
-                # TODO here has to be same structure as message_type_filter since one sentence can have "want to" and despising word at the same time.
-                # TODO or
-                if len(target_df) == 1 and \
-                        (target_df["pos"].iloc[0] in Nlp_util.pos_ADJECTIVEs
-                         or target_df["word"].iloc[0] in SENTIMENTAL_NON_ADJ_WORDS.word.tolist()):
+            # TODO here has to be same structure as message_type_filter since
+            # TODO one sentence can have "want to" and despising word at the same time.
 
-                    repeat_list += cls.create_special_repeat_for_only_one_adj_word_sent(target_df)
+            if len(target_df) == 1 and \
+                    (target_df["pos"].iloc[0] in Nlp_util.pos_ADJECTIVEs
+                     or target_df["word"].iloc[0] in SENTIMENTAL_NON_ADJ_WORDS.word.tolist()):
 
-                elif cls.__mean_no_friends(target_df):
-                    repeat_list += cls.__create_response_for_no_friends()
+                repeat_list += cls.create_special_repeat_for_only_one_adj_word_sent(target_df)
 
-                elif cls.__has_what_to_do(target_df):
-                    repeat_list += cls.__create_response_for_what_to_V(fixed_df)
+            elif cls.__mean_no_friends(target_df):
+                repeat_list += cls.__create_response_for_no_friends()
 
-                elif cls.__is_despising_himself(target_df):
-                    repeat_list += cls.__alter_repeat_euphemistic(repeat_text)
+            elif cls.__has_what_to_do(target_df):
+                repeat_list += cls.__create_response_for_what_to_V(fixed_df)
 
-                elif cls.__has_nobody_V(target_df):
-                    repeat_list += cls.__alter_repeat_euphemistic(repeat_text)
+            elif cls.__is_despising_himself(target_df):
+                repeat_list += cls.__alter_repeat_euphemistic(repeat_text)
 
-                elif cls.__does_user_feel_useless(target_df):
-                    repeat_list += cls.__create_response_for_healing_useless()
+            elif cls.__has_nobody_V(target_df):
+                repeat_list += cls.__alter_repeat_euphemistic(repeat_text)
 
-                elif cls.__has_say_plus_bad_word(target_df):
-                    repeat_list += cls.__create_response_for_S_said_bad_word(fixed_df)
+            elif cls.__does_user_feel_useless(target_df):
+                repeat_list += cls.__create_response_for_healing_useless()
 
-                elif cls.__exists_want_to(target_df):
-                    repeat_list += cls.__alter_repeat_for_want_to(fixed_df)
+            elif cls.__has_say_plus_bad_word(target_df):
+                repeat_list += cls.__create_response_for_S_said_bad_word(fixed_df)
 
-                elif cls.__exists_make_S_feel_ADJ(target_df):
-                    repeat_list += cls.__alter_repeat_for_make_S_feel_ADJ(target_df)
+            elif cls.__exists_want_to(target_df):
+                repeat_list += cls.__alter_repeat_for_want_to(fixed_df)
 
-                elif cls.__has_because(target_df):
-                    repeat_list += cls.__alter_repeat_for_because_sent(fixed_df, repeat_text)
+            elif cls.__exists_make_S_feel_ADJ(target_df):
+                repeat_list += cls.__alter_repeat_for_make_S_feel_ADJ(target_df)
 
-                elif cls.__exists_third_person_BeVerb_pair(target_df):
-                    repeat_list += cls.__alter_repeat_for_third_person_BeVerb_pair(repeat_text)
+            elif cls.__has_because(target_df):
+                repeat_list += cls.__alter_repeat_for_because_sent(fixed_df, repeat_text)
 
-                elif cls.__has_dont_think_SV_sent(target_df):
-                    repeat_list += cls.__alter_repeat_for_dont_think_SV(fixed_df)
+            elif cls.__exists_third_person_BeVerb_pair(target_df):
+                repeat_list += cls.__alter_repeat_for_third_person_BeVerb_pair(repeat_text)
 
-                elif cls.__has_wish_S_V(target_df):
-                    repeat_list += cls.__alter_repeat_for_wish(fixed_df)
+            elif cls.__has_dont_think_SV_sent(target_df):
+                repeat_list += cls.__alter_repeat_for_dont_think_SV(fixed_df)
 
-                elif cls.__has_need_NN(target_df):
-                    repeat_list += cls.__alter_repeat_for_need_sent(fixed_df)
+            elif cls.__has_wish_S_V(target_df):
+                repeat_list += cls.__alter_repeat_for_wish(fixed_df)
 
-                elif cls.__exists_keyword(text_kw_df):
-                    is_last_sentence = idx == len(sidx_to_repeat) - 1
-                    repeat_list += cls.__alter_repeat_for_keyword(text_df, text_kw_df, idx, repeat_text,
-                                                                  is_last_sentence=is_last_sentence)
-                else:
-                    repeat_list += cls.__alter_repeat_for_plain_repeat(repeat_text, idx)
+            elif cls.__has_need_NN(target_df):
+                repeat_list += cls.__alter_repeat_for_need_sent(fixed_df)
 
-            return repeat_list
-        except:
-            logging.exception('')
-            return []
+            elif cls.__exists_keyword(text_kw_df):
+                is_last_sentence = idx == len(sidx_to_repeat) - 1
+                repeat_list += cls.__alter_repeat_for_keyword(text_df, text_kw_df, idx, repeat_text,
+                                                              is_last_sentence=is_last_sentence)
+            else:
+                repeat_list += cls.__alter_repeat_for_plain_repeat(repeat_text, idx)
+
+        return repeat_list
 
     @staticmethod
     def __alter_repeat_for_wish(fixed_df):
         wish_idx = Nlp_util.get_idx_list_of_word("wish", fixed_df["base_form"])[0]
-        row_of_subj = Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_NOUNs+Nlp_util.pos_PRPs, wish_idx, column_name="pos").iloc[0]
-        row_of_verb = Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_VERBs, row_of_subj.name, column_name="pos").iloc[0]
+        row_of_subj = \
+            Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs, wish_idx,
+                                                       column_name="pos").iloc[0]
+        row_of_verb = Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_VERBs, row_of_subj.name,
+                                                                 column_name="pos").iloc[0]
         subj = row_of_subj.word
         verb = row_of_verb.word
-        after_verb = WordFormatter.Series2Str(fixed_df.loc[row_of_verb.name+1:, "word"])
+        after_verb = WordFormatter.Series2Str(fixed_df.loc[row_of_verb.name + 1:, "word"])
         objective_subj = Nlp_util.convert_nominative_noun_to_objective(subj)
         if subj == "you":
             repeat_list = [
-                ["you really want to "+verb+" "+after_verb],
-                ["so you seriously hope to "+verb+" "+after_verb],
-                ["so you are dying to "+verb+" "+after_verb]
+                ["you really want to " + verb + " " + after_verb],
+                ["so you seriously hope to " + verb + " " + after_verb],
+                ["so you are dying to " + verb + " " + after_verb]
             ]
         else:
             repeat_list = [
-                ["you really want "+objective_subj+" to "+verb+" "+after_verb],
-                ["you really wanna have "+objective_subj+" "+verb+" "+after_verb],
-                ["you really wanna make "+objective_subj+" "+verb+" "+after_verb]
+                ["you really want " + objective_subj + " to " + verb + " " + after_verb],
+                ["you really wanna have " + objective_subj + " " + verb + " " + after_verb],
+                ["you really wanna make " + objective_subj + " " + verb + " " + after_verb]
             ]
 
         cmp_list = [
@@ -151,155 +147,127 @@ class RepeatResponseGenerator(BaseResponseGenerator):
         random_idx_for_repeat_list = randint(0, len(repeat_list) - 1)
         random_idx_for_cmp_list = randint(0, len(cmp_list) - 1)
 
-        return repeat_list[random_idx_for_repeat_list]+cmp_list[random_idx_for_cmp_list]
-
-
-
-
+        return repeat_list[random_idx_for_repeat_list] + cmp_list[random_idx_for_cmp_list]
 
     @staticmethod
     def __has_wish_S_V(target_df):
         if Df_util.anything_isin(["wish"], target_df["base_form"]):
             wish_idx = Nlp_util.get_idx_list_of_word("wish", target_df["base_form"])[0]
-            if Nlp_util.are_words1_words2_words3_in_order(target_df.loc[wish_idx:,:], Nlp_util.pos_NOUNs+Nlp_util.pos_PRPs, Nlp_util.pos_VERBs, df_column="pos"):
+
+            return Nlp_util.are_words1_words2_words3_in_order(target_df.loc[wish_idx:, :],
+                                                              Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs,
+                                                              Nlp_util.pos_VERBs,
+                                                              df_column="pos")
+        else:
+            return False
+
+    # include sent 'i need my life'
+    @staticmethod
+    def __alter_repeat_for_need_sent(fixed_df):
+        idx_of_need = Nlp_util.get_idx_list_of_word("need", fixed_df["base_form"])[0]
+
+        row_of_first_noun = \
+            Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs,
+                                                       idx_of_need,
+                                                       column_name="pos").iloc[0]
+        if fixed_df.loc[row_of_first_noun.name - 1, "pos"] in Nlp_util.pos_ADJECTIVEs + ["PRP$", "DT"]:
+            noun = WordFormatter.Series2Str(fixed_df.loc[row_of_first_noun.name - 1:row_of_first_noun.name, "word"])
+        else:
+            noun = fixed_df.loc[row_of_first_noun.name, "word"]
+
+        noun_nominative = Nlp_util.convert_objective_noun_to_nominative(noun)
+
+        options = [
+            ["so " + noun_nominative + " is very important thing for you..",
+             "and sounds its kinda hard to get it now right😢"],
+            ["so its like its not easy to get " + noun + " now but you really want..",
+             "and it can frustrate you😞"],
+            ["sounds you really want " + noun + "..", "might be tough time for you to seek for it now😓"]
+        ]
+
+        random_idx_for_options = randint(0, len(options) - 1)
+
+        return options[random_idx_for_options]
+
+    # except i need you to do~~ i need doing~~
+    @staticmethod
+    def __has_need_NN(target_df):
+        df_ex_adverb = target_df[~target_df.pos.isin(Nlp_util.pos_ADVERBs)].reset_index(drop=True)
+        if Df_util.anything_isin(["need"], df_ex_adverb["base_form"]):
+            idx_of_need = Nlp_util.get_idx_list_of_word("need", df_ex_adverb["base_form"])[0]
+            if Df_util.anything_isin(Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs,
+                                     df_ex_adverb.loc[idx_of_need + 1:, "pos"]) and \
+                    not Df_util.anything_isin(Nlp_util.IDEA_TYPE, df_ex_adverb.loc[idx_of_need + 1:, "base_form"]):
+
+                if Df_util.anything_isin(["to"], df_ex_adverb.loc[idx_of_need + 1:, "base_form"]):
+                    return False
+                else:
+                    return True
+            else:
+                return False
+        else:
+            return False
+
+    # ex) i dont think he likes me
+    @staticmethod
+    def __alter_repeat_for_dont_think_SV(fixed_df):
+        # TODO see if its neccesary to care about should and cant
+        idx_of_think = Nlp_util.get_idx_list_of_word("think", fixed_df["base_form"])[0]
+        df_after_think = fixed_df.loc[idx_of_think + 1:, :].reset_index(drop=True)
+        verb_list = Nlp_util.make_verb_list(df_after_think, type="normal")
+        noun_list = Nlp_util.make_noun_list(df_after_think)
+        # possibly bug happen here since amount of verbs are different in cant do/dont do
+        is_negative_form = Df_util.anything_isin(["not", "never"], df_after_think.loc[:, "base_form"])
+        # can add possibly or likely(when its negative)
+        head_words = ["so ", "so probably ", "probably ", "so maybe ", "maybe "]
+        random_idx_for_heads_words = randint(0, len(head_words) - 1)
+        if is_negative_form:
+            # まず主語とるそのあとにwouldntいれるその後ろに動詞の原型をいれて、それ以降はつづける
+            head_word = head_words[random_idx_for_heads_words]
+            subj = noun_list["word"].iloc[0]
+            auxiliary_verb = " would "
+            idx_of_not = Nlp_util.get_idx_list_of_word_list(["not", "never"], df_after_think.loc[:, "base_form"])[0]
+            verb_row = verb_list.loc[idx_of_not:, :].iloc[0]
+            verb = verb_row.base_form + " "
+
+            after_verb = WordFormatter.Series2Str(df_after_think.loc[verb_row.name + 1:, "word"])
+            return [head_word + subj + auxiliary_verb + verb + after_verb]
+        else:
+            head_word = head_words[random_idx_for_heads_words]
+            subj = noun_list["word"].iloc[0]
+            auxiliary_verb = " wouldnt "
+            verb = verb_list["base_form"].iloc[0] + " "
+            after_verb = WordFormatter.Series2Str(df_after_think.loc[verb_list.index[0] + 1:, "word"])
+            return [head_word + subj + auxiliary_verb + verb + after_verb]
+
+    @staticmethod
+    def __has_dont_think_SV_sent(df):
+        df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)].reset_index(drop=True)
+        exists_i_dont_think = Df_util.anything_isin(["i do not think"], df_ex_adverb["base_form"])
+        if exists_i_dont_think:
+            idx_of_dont_think = Nlp_util.get_idx_list_of_idiom("i do not think", df_ex_adverb["base_form"])[0]
+            if len(RepeatResponseGenerator.get_sidx_of_not_basic_svo_sent(
+                    df_ex_adverb.loc[idx_of_dont_think + 4:, :])) == 0:
                 return True
             else:
                 return False
         else:
             return False
 
-
-
-
-
-    # include sent 'i need my life'
-    @staticmethod
-    def __alter_repeat_for_need_sent(fixed_df):
-        try:
-            idx_of_need = Nlp_util.get_idx_list_of_word("need", fixed_df["base_form"])[0]
-
-            row_of_first_noun = Nlp_util.get_wordsDF_of_wordlist_after_idx(fixed_df, Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs, idx_of_need, column_name="pos").iloc[0]
-            if fixed_df.loc[row_of_first_noun.name-1, "pos"] in Nlp_util.pos_ADJECTIVEs + ["PRP$", "DT"]:
-                noun = WordFormatter.Series2Str(fixed_df.loc[row_of_first_noun.name-1:row_of_first_noun.name, "word"])
-            else:
-                noun = fixed_df.loc[row_of_first_noun.name, "word"]
-
-            noun_nominative = Nlp_util.convert_objective_noun_to_nominative(noun)
-
-
-            options = [
-                ["so " + noun_nominative + " is very important thing for you..",
-                 "and sounds its kinda hard to get it now right😢"],
-                ["so its like its not easy to get " + noun + " now but you really want..",
-                 "and it can frustrate you😞"],
-                ["sounds you really want " + noun + "..", "might be tough time for you to seek for it now😓"]
-            ]
-
-            random_idx_for_options = randint(0, len(options) - 1)
-
-            return options[random_idx_for_options]
-
-        except:
-            logging.exception('')
-            repeat_text = WordFormatter.Df2Str(fixed_df)[1:]
-            return [repeat_text]
-
-    # except i need you to do~~ i need doing~~
-    @staticmethod
-    def __has_need_NN(target_df):
-        try:
-            df_ex_adverb = target_df[~target_df.pos.isin(Nlp_util.pos_ADVERBs)].reset_index(drop=True)
-            if Df_util.anything_isin(["need"], df_ex_adverb["base_form"]):
-                idx_of_need = Nlp_util.get_idx_list_of_word("need", df_ex_adverb["base_form"])[0]
-                if Df_util.anything_isin(Nlp_util.pos_NOUNs + Nlp_util.pos_PRPs,
-                                         df_ex_adverb.loc[idx_of_need + 1:, "pos"]) and not Df_util.anything_isin(
-                    Nlp_util.IDEA_TYPE, df_ex_adverb.loc[idx_of_need + 1:, "base_form"]):
-                    if Df_util.anything_isin(["to"], df_ex_adverb.loc[idx_of_need + 1:, "base_form"]):
-                        return False
-                    else:
-                        return True
-                else:
-                    return False
-            else:
-                return False
-
-        except:
-            logging.exception('')
-            return False
-
-    # ex) i dont think he likes me
-    @staticmethod
-    def __alter_repeat_for_dont_think_SV(fixed_df):
-        try:
-            # TODO see if its neccesary to care about should and cant
-            idx_of_think = Nlp_util.get_idx_list_of_word("think", fixed_df["base_form"])[0]
-            df_after_think = fixed_df.loc[idx_of_think + 1:, :].reset_index(drop=True)
-            verb_list = Nlp_util.make_verb_list(df_after_think, type="normal")
-            noun_list = Nlp_util.make_noun_list(df_after_think)
-            # possibly bug happen here since amount of verbs are different in cant do/dont do
-            is_negative_form = Df_util.anything_isin(["not", "never"], df_after_think.loc[:, "base_form"])
-            # can add possibly or likely(when its negative)
-            head_words = ["so ", "so probably ", "probably ", "so maybe ", "maybe "]
-            random_idx_for_heads_words = randint(0, len(head_words) - 1)
-            if is_negative_form:
-                # まず主語とるそのあとにwouldntいれるその後ろに動詞の原型をいれて、それ以降はつづける
-                head_word = head_words[random_idx_for_heads_words]
-                subj = noun_list["word"].iloc[0]
-                auxiliary_verb = " would "
-                idx_of_not = Nlp_util.get_idx_list_of_word_list(["not", "never"], df_after_think.loc[:, "base_form"])[0]
-                verb_row = verb_list.loc[idx_of_not:, :].iloc[0]
-                verb = verb_row.base_form + " "
-
-                after_verb = WordFormatter.Series2Str(df_after_think.loc[verb_row.name + 1:, "word"])
-                return [head_word + subj + auxiliary_verb + verb + after_verb]
-            else:
-                head_word = head_words[random_idx_for_heads_words]
-                subj = noun_list["word"].iloc[0]
-                auxiliary_verb = " wouldnt "
-                verb = verb_list["base_form"].iloc[0] + " "
-                after_verb = WordFormatter.Series2Str(df_after_think.loc[verb_list.index[0] + 1:, "word"])
-                return [head_word + subj + auxiliary_verb + verb + after_verb]
-        except:
-            logging.exception('')
-            return []
-
-    @staticmethod
-    def __has_dont_think_SV_sent(df):
-        try:
-            df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)].reset_index(drop=True)
-            exists_i_dont_think = Df_util.anything_isin(["i do not think"], df_ex_adverb["base_form"])
-            if exists_i_dont_think:
-                idx_of_dont_think = Nlp_util.get_idx_list_of_idiom("i do not think", df_ex_adverb["base_form"])[0]
-                if len(RepeatResponseGenerator.get_sidx_of_not_basic_svo_sent(
-                        df_ex_adverb.loc[idx_of_dont_think + 4:, :])) == 0:
-                    return True
-                else:
-                    return False
-            else:
-                return False
-
-        except:
-            logging.exception('')
-            return False
-
     @staticmethod
     def __alter_repeat_for_because_sent(df, repeat_text):
-        try:
-            if df["base_form"].iloc[0] in ["because", "since"]:
-                repeat_text = "its " + repeat_text
-                return [repeat_text]
-            elif Df_util.anything_isin(["because of"], df.loc[2:, "base_form"]) and not Df_util.anything_isin(
-                    ["it is", "that is"], df.loc[:3, "base_form"]):
-                because_of_idx = Nlp_util.get_idx_list_of_idiom("because of", df["base_form"])[0]
-                first_part = WordFormatter.Df2Str(df.loc[:because_of_idx - 1, :])
-                last_part = "and its" + WordFormatter.Df2Str(df.loc[because_of_idx:, :])
-                return [first_part, last_part]
-
-            else:
-                raise UnknownError
-        except:
-            logging.exception('')
+        if df["base_form"].iloc[0] in ["because", "since"]:
+            repeat_text = "its " + repeat_text
             return [repeat_text]
+        elif Df_util.anything_isin(["because of"], df.loc[2:, "base_form"]) and not Df_util.anything_isin(
+                ["it is", "that is"], df.loc[:3, "base_form"]):
+            because_of_idx = Nlp_util.get_idx_list_of_idiom("because of", df["base_form"])[0]
+            first_part = WordFormatter.Df2Str(df.loc[:because_of_idx - 1, :])
+            last_part = "and its" + WordFormatter.Df2Str(df.loc[because_of_idx:, :])
+            return [first_part, last_part]
+
+        else:
+            raise UnknownError
 
     @staticmethod
     def __has_because(df):
@@ -346,56 +314,41 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @staticmethod
     def __has_say_plus_bad_word(df):
-        try:
+        if any([Nlp_util.are_words1_words2_words3_in_order(df, ["say", "tell"], ["i be", "i look"],
+                                                           [negative_word]) for negative_word in
+                KWDF[KWDF['Type'] == 'n'].keyword.tolist()]):
+            return True
 
-            if any([Nlp_util.are_words1_words2_words3_in_order(df, ["say", "tell"], ["i be", "i look"],
-                                                               [negative_word]) for negative_word in
-                    KWDF[KWDF['Type'] == 'n'].keyword.tolist()]):
-                return True
+        elif any([Nlp_util.are_words1_words2_words3_in_order(df, ["say", "tell"],
+                                                             ["i be not", "i do not look"],
+                                                             [positive_word]) for positive_word in
+                  KWDF[KWDF['Type'] == 'p'].keyword.tolist()]):
+            return True
 
-            elif any([Nlp_util.are_words1_words2_words3_in_order(df, ["say", "tell"],
-                                                                 ["i be not", "i do not look"],
-                                                                 [positive_word]) for positive_word in
-                      KWDF[KWDF['Type'] == 'p'].keyword.tolist()]):
-                return True
-
-            else:
-                return False
-
-
-        except:
-            logging.exception('')
+        else:
             return False
 
     @staticmethod
     def __has_nobody_V(df):
-        try:
-            idx_list_of_nobody = Nlp_util.get_idx_list_of_word("nobody", df["base_form"])
-            if len(idx_list_of_nobody) == 0:
-                return False
-            else:
-                if any(df.loc[idx_list_of_nobody[0]:, "pos"].isin(Nlp_util.pos_VERBs)):
-                    return True
-                else:
-                    return False
-        except:
-            logging.exception('')
+        idx_list_of_nobody = Nlp_util.get_idx_list_of_word("nobody", df["base_form"])
+        if len(idx_list_of_nobody) == 0:
             return False
+        else:
+            if any(df.loc[idx_list_of_nobody[0]:, "pos"].isin(Nlp_util.pos_VERBs)):
+                return True
+            else:
+                return False
 
     @staticmethod
     def __does_user_feel_useless(df):
-        try:
-            idx_list_of_useless = Nlp_util.get_idx_list_of_idiom_list(["be useless", "feel useless"], df["base_form"])
-            if len(idx_list_of_useless) == 0:
-                return False
-            else:
-                for useless_idx in idx_list_of_useless:
-                    is_subj_i = Df_util.anything_isin(["i"], df.loc[:useless_idx, "word"])
-                    if is_subj_i:
-                        return True
-                return False
-        except:
-            logging.exception('')
+        idx_list_of_useless = Nlp_util.get_idx_list_of_idiom_list(["be useless", "feel useless"], df["base_form"])
+        if len(idx_list_of_useless) == 0:
+            return False
+        else:
+            for useless_idx in idx_list_of_useless:
+                is_subj_i = Df_util.anything_isin(["i"], df.loc[:useless_idx, "word"])
+                if is_subj_i:
+                    return True
             return False
 
     @staticmethod
@@ -424,45 +377,33 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @classmethod
     def __exists_want_to(cls, df):
-        try:
-            df_without_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
+        df_without_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
 
-            noun_list = Nlp_util.make_noun_list(df)
-            verb_list = Nlp_util.make_verb_list(df, type="basic")
+        noun_list = Nlp_util.make_noun_list(df)
+        verb_list = Nlp_util.make_verb_list(df, type="basic")
 
-            idx_of_i_wanna = Nlp_util.get_idx_list_of_idiom("i want to", df_without_adverb.base_form)
+        idx_of_i_wanna = Nlp_util.get_idx_list_of_idiom("i want to", df_without_adverb.base_form)
 
-            if len(idx_of_i_wanna) != 0 and len(df.loc[idx_of_i_wanna[0] + 2:, :]) > 1:
-                if cls.__exists_word_after_want_to(df) and Nlp_util.is_first_subject_in({"i"}, noun_list, verb_list):
-                    return True
-                else:
-                    return False
+        if len(idx_of_i_wanna) != 0 and len(df.loc[idx_of_i_wanna[0] + 2:, :]) > 1:
+            if cls.__exists_word_after_want_to(df) and Nlp_util.is_first_subject_in({"i"}, noun_list, verb_list):
+                return True
             else:
                 return False
-        except:
-            logging.exception('')
+        else:
             return False
 
     @staticmethod
     def __exists_word_after_want_to(df):
-        try:
-            idx_of_i = Nlp_util.get_idx_list_of_idiom("want to", df.word)[0]
-            length_after_want_to = len(df.loc[idx_of_i + 2, :]) if len(df) >= idx_of_i + 3 else 0
+        idx_of_i = Nlp_util.get_idx_list_of_idiom("want to", df.word)[0]
+        length_after_want_to = len(df.loc[idx_of_i + 2, :]) if len(df) >= idx_of_i + 3 else 0
 
-            return length_after_want_to > 2
-        except:
-            logging.exception('')
-            return False
+        return length_after_want_to > 2
 
     @staticmethod
     def __has_what_to_do(df):
-        try:
-            df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
-            return Nlp_util.are_words1_words2_words3_in_order(df_ex_adverb, ["i"], ["not know", "not sure"],
-                                                              ["what to", "how to"])
-        except:
-            logging.exception('')
-            return False
+        df_ex_adverb = df[~df.pos.isin(Nlp_util.pos_ADVERBs)]
+        return Nlp_util.are_words1_words2_words3_in_order(df_ex_adverb, ["i"], ["not know", "not sure"],
+                                                          ["what to", "how to"])
 
     @staticmethod
     def __create_response_for_what_to_V(df):
@@ -491,23 +432,19 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @staticmethod
     def __mean_no_friends(df):
-        try:
-            exists_nobody_likes_me = Nlp_util.are_words1_words2_words3_in_order(df, ["nobody", "no one"],
-                                                                                ["like", "love"], ["me"])
-            exists_friends_dont_like_me = Nlp_util.are_words1_words2_words3_in_order(df, ["friend", "they",
-                                                                                          "everybody"],
-                                                                                     ["not like", "not love",
-                                                                                      "hate"], ["me"])
-            exists_have_no_friend = Nlp_util.are_words1_words2_words3_in_order(df, ["i"],
-                                                                               ["not have", "have no"],
-                                                                               ["friend"])
+        exists_nobody_likes_me = Nlp_util.are_words1_words2_words3_in_order(df, ["nobody", "no one"],
+                                                                            ["like", "love"], ["me"])
+        exists_friends_dont_like_me = Nlp_util.are_words1_words2_words3_in_order(df, ["friend", "they",
+                                                                                      "everybody"],
+                                                                                 ["not like", "not love",
+                                                                                  "hate"], ["me"])
+        exists_have_no_friend = Nlp_util.are_words1_words2_words3_in_order(df, ["i"],
+                                                                           ["not have", "have no"],
+                                                                           ["friend"])
 
-            if exists_nobody_likes_me or exists_friends_dont_like_me or exists_have_no_friend:
-                return True
-            else:
-                return False
-        except:
-            logging.exception('')
+        if exists_nobody_likes_me or exists_friends_dont_like_me or exists_have_no_friend:
+            return True
+        else:
             return False
 
     @staticmethod
@@ -527,9 +464,12 @@ class RepeatResponseGenerator(BaseResponseGenerator):
         being_with_you = [
             ["not sure i can be enough for you but let me tell you to know that i am always here for you😊"],
             [
-                "just let me reassure you that i will always be here for you even tho i am nothing near perfect. i am just here to listen🤗"],
+                "just let me reassure you that i will always be here for you " +
+                "even tho i am nothing near perfect. i am just here to listen🤗"],
             [
-                "since it seems like a really tough time for you,  I want you to think of our conversations as a space where you can feel safe and connected. I am here for you☺️"]
+                "since it seems like a really tough time for you, " +
+                "I want you to think of our conversations as a space " +
+                "where you can feel safe and connected. I am here for you☺️"]
         ]
 
         random_idx_for_express_feeling = randint(0, len(express_feeling) - 1)
@@ -547,43 +487,35 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @staticmethod
     def __alter_repeat_for_make_S_feel_ADJ(df):
-        try:
-            idx_of_make = Nlp_util.get_idx_list_of_word_list(["make"], df["base_form"])[0]
-            subj = Nlp_util.change_object_pronoun_to_pronoun(df.loc[idx_of_make + 1, "word"])
-            df_after_subj = df.loc[idx_of_make + 2:idx_of_make + 4, :]
-            adj = df_after_subj.loc[df_after_subj["pos"].isin(Nlp_util.pos_ADJECTIVEs), "word"].iloc[0]
-            subj_adj_list = [subj, adj]
-            options = [
-                ["{0[0]} feel {0[1]} because of that".format(subj_adj_list)],
-                ["thats getting {0[0]} feel {0[1]}".format(subj_adj_list)],
-                ["thats the moment {0[0]} feel {0[1]}".format(subj_adj_list)],
-            ]
+        idx_of_make = Nlp_util.get_idx_list_of_word_list(["make"], df["base_form"])[0]
+        subj = Nlp_util.change_object_pronoun_to_pronoun(df.loc[idx_of_make + 1, "word"])
+        df_after_subj = df.loc[idx_of_make + 2:idx_of_make + 4, :]
+        adj = df_after_subj.loc[df_after_subj["pos"].isin(Nlp_util.pos_ADJECTIVEs), "word"].iloc[0]
+        subj_adj_list = [subj, adj]
+        options = [
+            ["{0[0]} feel {0[1]} because of that".format(subj_adj_list)],
+            ["thats getting {0[0]} feel {0[1]}".format(subj_adj_list)],
+            ["thats the moment {0[0]} feel {0[1]}".format(subj_adj_list)],
+        ]
 
-            random_idx = randint(0, len(options) - 1)
-            return options[random_idx]
-        except:
-            logging.exception('')
-            return []
+        random_idx = randint(0, len(options) - 1)
+        return options[random_idx]
 
     @staticmethod
     def __exists_make_S_feel_ADJ(df):
-        try:
-            idx_list_of_make = Nlp_util.get_idx_list_of_word_list(["make"], df["base_form"])
-            if len(idx_list_of_make) == 0:
-                return False
-            else:
-                is_after_make_prp = df.loc[idx_list_of_make[0] + 1, "pos"] in Nlp_util.pos_PRPs
-                if is_after_make_prp:
-                    is_after_prp_adj = df.loc[idx_list_of_make[0] + 2, "pos"] in Nlp_util.pos_ADJECTIVEs or (
-                            df.loc[idx_list_of_make[0] + 2, "base_form"] == "feel" and any(
-                        df.loc[idx_list_of_make[0] + 2:idx_list_of_make[0] + 4, "pos"].isin(
-                            Nlp_util.pos_ADJECTIVEs)))
-                    return is_after_prp_adj
-                else:
-                    return False
-        except:
-            logging.exception('')
+        idx_list_of_make = Nlp_util.get_idx_list_of_word_list(["make"], df["base_form"])
+        if len(idx_list_of_make) == 0:
             return False
+        else:
+            is_after_make_prp = df.loc[idx_list_of_make[0] + 1, "pos"] in Nlp_util.pos_PRPs
+            if is_after_make_prp:
+                is_after_prp_adj = df.loc[idx_list_of_make[0] + 2, "pos"] in Nlp_util.pos_ADJECTIVEs or (
+                        df.loc[idx_list_of_make[0] + 2, "base_form"] == "feel" and any(
+                    df.loc[idx_list_of_make[0] + 2:idx_list_of_make[0] + 4, "pos"].isin(
+                        Nlp_util.pos_ADJECTIVEs)))
+                return is_after_prp_adj
+            else:
+                return False
 
     @staticmethod
     def create_special_repeat_for_only_one_adj_word_sent(df):
@@ -600,53 +532,37 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @staticmethod
     def __is_despising_himself(df):
-        try:
-            noun_list = Nlp_util.make_noun_list(df)
-            verb_list = Nlp_util.make_verb_list(df, type="normal")
-            adj_list = Nlp_util.make_adj_list(df)
+        noun_list = Nlp_util.make_noun_list(df)
+        verb_list = Nlp_util.make_verb_list(df, type="normal")
+        adj_list = Nlp_util.make_adj_list(df)
 
-            is_first_sub_i = Nlp_util.is_first_subject_in(["i"], noun_list, verb_list)
-            is_the_verb_be = Nlp_util.is_first_verb_in(["be"], noun_list, verb_list, column_name="base_form")
-            is_the_adj_despising = Nlp_util.is_first_adj_after_first_sub_in(WORDS_DESPITE_HIMSELF.word.tolist(),
-                                                                            noun_list, adj_list)
-            return is_first_sub_i and is_the_verb_be and is_the_adj_despising
-        except:
-            logging.exception('')
-            return False
+        is_first_sub_i = Nlp_util.is_first_subject_in(["i"], noun_list, verb_list)
+        is_the_verb_be = Nlp_util.is_first_verb_in(["be"], noun_list, verb_list, column_name="base_form")
+        is_the_adj_despising = Nlp_util.is_first_adj_after_first_sub_in(WORDS_DESPITE_HIMSELF.word.tolist(),
+                                                                        noun_list, adj_list)
+        return is_first_sub_i and is_the_verb_be and is_the_adj_despising
 
     @staticmethod
     def __alter_repeat_euphemistic(repeat):
-        try:
-            prefix_expression = \
-                np.random.choice(["you think ", "you feel like ", "you are feeling like ", "it feels like "], 1)[0]
+        prefix_expression = \
+            np.random.choice(["you think ", "you feel like ", "you are feeling like ", "it feels like "], 1)[0]
 
-            return [prefix_expression + repeat]
-        except:
-            logging.exception('')
-            return [repeat]
+        return [prefix_expression + repeat]
 
     @staticmethod
     def __alter_repeat_for_plain_repeat(repeat_text, idx):
-        try:
-            repeat_text += np.random.choice(["", "..?", "."], 1, p=[0.5, 0.1, 0.4])[0]
+        repeat_text += np.random.choice(["", "..?", "."], 1, p=[0.5, 0.1, 0.4])[0]
 
-            if idx != 0:
-                repeat_text = np.random.choice(StringConstant.additions.value, 1, p=[0.5, 0.2, 0.2, 0.1])[
-                                  0] + repeat_text
+        if idx != 0:
+            repeat_text = np.random.choice(StringConstant.additions.value, 1, p=[0.5, 0.2, 0.2, 0.1])[
+                              0] + repeat_text
 
-            return [repeat_text]
-        except:
-            logging.exception('')
-            return [repeat_text]
+        return [repeat_text]
 
     @staticmethod
     def __alter_repeat_for_third_person_BeVerb_pair(repeat):
-        try:
-            prefix_expression = np.random.choice(["you think ", "you feel "], 1, p=[0.5, 0.5])[0]
-            return [prefix_expression + repeat]
-        except:
-            logging.exception('')
-            return []
+        prefix_expression = np.random.choice(["you think ", "you feel "], 1, p=[0.5, 0.5])[0]
+        return [prefix_expression + repeat]
 
     @staticmethod
     def __exists_keyword(text_kw_df):
@@ -679,130 +595,105 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @classmethod
     def __is_every_sent_positive(cls, text_df, text_kw_df):
-        try:
-            if text_kw_df.empty:
-                return False
-
-            if len(set(text_df.sidx)) > len(set(text_kw_df.sidx)):
-                return False
-
-            is_every_kw_positive = all(row.sscore > 70 for tmp, row in text_kw_df.iterrows())
-            is_every_kw_affirmative = all(not row.ng for tmp, row in text_kw_df.iterrows())
-
-            want_wish_words = {'want', 'wanted', 'wish', 'wished', 'wishing'}
-            exists_want_wish = any(row.word in want_wish_words for tmp, row in text_df.iterrows())
-
-            return is_every_kw_positive and is_every_kw_affirmative and not exists_want_wish
-        except:
-            logging.exception('')
+        if text_kw_df.empty:
             return False
+
+        if len(set(text_df.sidx)) > len(set(text_kw_df.sidx)):
+            return False
+
+        is_every_kw_positive = all(row.sscore > 70 for tmp, row in text_kw_df.iterrows())
+        is_every_kw_affirmative = all(not row.ng for tmp, row in text_kw_df.iterrows())
+
+        want_wish_words = {'want', 'wanted', 'wish', 'wished', 'wishing'}
+        exists_want_wish = any(row.word in want_wish_words for tmp, row in text_df.iterrows())
+
+        return is_every_kw_positive and is_every_kw_affirmative and not exists_want_wish
 
     @classmethod
     def __alter_repeat_for_want_to(cls, repeat_df):
-        try:
-            i_idx = Nlp_util.get_idx_list_of_idiom("want to", repeat_df.word)[0]
+        i_idx = Nlp_util.get_idx_list_of_idiom("want to", repeat_df.word)[0]
 
-            words_after_wanna = WordFormatter.Df2Str(repeat_df[i_idx + 2:])[1:]
+        words_after_wanna = WordFormatter.Df2Str(repeat_df[i_idx + 2:])[1:]
 
-            response_options = [
-                [words_after_wanna, "That's what you wanna do"],
-                ["So you'd be happy if you can " + words_after_wanna + "🤔"],
-                ["So there is something makes you can't " + words_after_wanna + "😢"],
-                ["So now it's hard for you to " + words_after_wanna + "😓"]
-            ]
+        response_options = [
+            [words_after_wanna, "That's what you wanna do"],
+            ["So you'd be happy if you can " + words_after_wanna + "🤔"],
+            ["So there is something makes you can't " + words_after_wanna + "😢"],
+            ["So now it's hard for you to " + words_after_wanna + "😓"]
+        ]
 
-            random_idx = randint(0, len(response_options) - 1)
-            return response_options[random_idx]
-        except:
-            logging.exception('')
-            repeat_text = WordFormatter.Df2Str(repeat_df)[1:]
-            return [repeat_text]
+        random_idx = randint(0, len(response_options) - 1)
+        return response_options[random_idx]
 
     # ex) they are insane -> you think they are insane
     @classmethod
     def __exists_third_person_BeVerb_pair(cls, df):
-        try:
-            first_third_person = df.loc[((df.pos.isin(Nlp_util.pos_PRPs)) & (~df.word.isin(["i", "you"]))) | (
-                df.base_form.isin(Nlp_util.INDICATE_OTHERS)), :]
+        first_third_person = df.loc[((df.pos.isin(Nlp_util.pos_PRPs)) & (~df.word.isin(["i", "you"]))) | (
+            df.base_form.isin(Nlp_util.INDICATE_OTHERS)), :]
 
-            if len(first_third_person) != 0:
-                is_beVerb_and_adj_after_the_person = Df_util.anything_isin(["be"],
-                                                                           df.loc[first_third_person.iloc[0].name:,
-                                                                           "base_form"]) and Df_util.anything_isin(
-                    Nlp_util.pos_ADJECTIVEs, df.loc[first_third_person.iloc[0].name:, "pos"])
+        if len(first_third_person) != 0:
+            is_beVerb_and_adj_after_the_person = Df_util.anything_isin(["be"],
+                                                                       df.loc[first_third_person.iloc[0].name:,
+                                                                       "base_form"]) and Df_util.anything_isin(
+                Nlp_util.pos_ADJECTIVEs, df.loc[first_third_person.iloc[0].name:, "pos"])
 
-                if is_beVerb_and_adj_after_the_person:
-                    return True
-                else:
-                    return False
+            if is_beVerb_and_adj_after_the_person:
+                return True
             else:
                 return False
-        except:
-            logging.exception('')
+        else:
             return False
 
     @staticmethod
     def __is_1st_prp_followed_by_BE_TYPE(df, first_prp):
-        try:
-            return df.loc[first_prp.name + 1, "word"] in Nlp_util.BE_TYPE
         # TODO ここでちゃんとbeとらなきゃだめwould be 取られない
-        except:
-            logging.exception('')
-            return False
+        return df.loc[first_prp.name + 1, "word"] in Nlp_util.BE_TYPE
 
     @staticmethod
     def __is_2nd_word_after_1st_prp_verb(df, first_prp):
-        try:
-            return df.loc[first_prp.name + 2, "pos"] in Nlp_util.pos_VERBs
-        except:
-            logging.exception('')
-            return False
+        return df.loc[first_prp.name + 2, "pos"] in Nlp_util.pos_VERBs
 
     @classmethod
     def __select_sidx_to_repeat(cls, text_df, sentiment_score_df, repeatable_sent_sidx):
-        try:
-            number_of_sents_to_choose = 2
-            sidx_to_repeat = []
-            only_one_sentiment_word_sidx = []
-            # these are exceptions of repeatable sents
-            for sidx in set(text_df.sidx):
-                tmp_df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
-                if cls.__is_special_type(tmp_df):
-                    sidx_to_repeat.append(sidx)
-                elif len(tmp_df) == 1 and \
-                        (tmp_df["pos"].iloc[0] in Nlp_util.pos_ADJECTIVEs or
-                         tmp_df["word"].iloc[0] in SENTIMENTAL_NON_ADJ_WORDS.word.tolist()):
-                    only_one_sentiment_word_sidx.append(sidx)
-                else:
-                    pass
-
-            # when user just said only "sadness" or "sad"
-            if not sidx_to_repeat and not repeatable_sent_sidx and only_one_sentiment_word_sidx:
-                return [only_one_sentiment_word_sidx[-1]]
-
-            print("\nSpecial cases sidx\n{}".format(sidx_to_repeat))
-
-            if len(sidx_to_repeat) == 2:
-                return set(sidx_to_repeat)
-            elif len(sidx_to_repeat) > 2:
-                return set(sidx_to_repeat[len(sidx_to_repeat) - 2:])
-            elif not sidx_to_repeat and not repeatable_sent_sidx:
-                return []
-
+        number_of_sents_to_choose = 2
+        sidx_to_repeat = []
+        only_one_sentiment_word_sidx = []
+        # these are exceptions of repeatable sents
+        for sidx in set(text_df.sidx):
+            tmp_df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
+            if cls.__is_special_type(tmp_df):
+                sidx_to_repeat.append(sidx)
+            elif len(tmp_df) == 1 and \
+                    (tmp_df["pos"].iloc[0] in Nlp_util.pos_ADJECTIVEs or
+                     tmp_df["word"].iloc[0] in SENTIMENTAL_NON_ADJ_WORDS.word.tolist()):
+                only_one_sentiment_word_sidx.append(sidx)
             else:
-                if not repeatable_sent_sidx:
-                    return sidx_to_repeat
-                else:
-                    sentiment_score_df = sentiment_score_df[
-                        sentiment_score_df.sidx.isin(repeatable_sent_sidx)
-                    ].sort_values(by='nscore', ascending=True)
-                    sidx_to_repeat += list(set(sentiment_score_df.sidx.tolist()))[
-                                      :number_of_sents_to_choose - len(sidx_to_repeat)]
-                    sidx_to_repeat.sort()
-                    return set(sidx_to_repeat)
-        except Exception:
-            logging.exception(str(__name__))
+                pass
+
+        # when user just said only "sadness" or "sad"
+        if not sidx_to_repeat and not repeatable_sent_sidx and only_one_sentiment_word_sidx:
+            return [only_one_sentiment_word_sidx[-1]]
+
+        print("\nSpecial cases sidx\n{}".format(sidx_to_repeat))
+
+        if len(sidx_to_repeat) == 2:
+            return set(sidx_to_repeat)
+        elif len(sidx_to_repeat) > 2:
+            return set(sidx_to_repeat[len(sidx_to_repeat) - 2:])
+        elif not sidx_to_repeat and not repeatable_sent_sidx:
             return []
+
+        else:
+            if not repeatable_sent_sidx:
+                return sidx_to_repeat
+            else:
+                sentiment_score_df = sentiment_score_df[
+                    sentiment_score_df.sidx.isin(repeatable_sent_sidx)
+                ].sort_values(by='nscore', ascending=True)
+                sidx_to_repeat += list(set(sentiment_score_df.sidx.tolist()))[
+                                  :number_of_sents_to_choose - len(sidx_to_repeat)]
+                sidx_to_repeat.sort()
+                return set(sidx_to_repeat)
 
     @classmethod
     def __select_repeatable_sent_sidx(cls, text_df, intent_list):
@@ -817,170 +708,122 @@ class RepeatResponseGenerator(BaseResponseGenerator):
 
     @classmethod
     def __choose_unrepeatable_sent_index(cls, text_df, intent_list):
-        try:
-            unrepeatable_sidx_list = []
+        unrepeatable_sidx_list = []
 
-            idx_of_sent_talking_about_jullie = list(text_df[text_df.word.isin(["you", "jullie", "j"])].sidx)
-            unrepeatable_sidx_list.extend(idx_of_sent_talking_about_jullie)
+        idx_of_sent_talking_about_jullie = list(text_df[text_df.word.isin(["you", "jullie", "j"])].sidx)
+        unrepeatable_sidx_list.extend(idx_of_sent_talking_about_jullie)
 
-            print("\nList of sent having YOU\n{}".format(idx_of_sent_talking_about_jullie))
+        print("\nList of sent having YOU\n{}".format(idx_of_sent_talking_about_jullie))
 
-            sidx_with_bad_words = cls.__get_sidx_with_bad_words(text_df)
-            unrepeatable_sidx_list.extend(sidx_with_bad_words)
-            print("\nList of sent having Bad Words\n{}".format(sidx_with_bad_words))
+        sidx_with_bad_words = cls.__get_sidx_with_bad_words(text_df)
+        unrepeatable_sidx_list.extend(sidx_with_bad_words)
+        print("\nList of sent having Bad Words\n{}".format(sidx_with_bad_words))
 
-            sidx_of_not_basic_svo_sent = cls.get_sidx_of_not_basic_svo_sent(text_df)
-            unrepeatable_sidx_list.extend(sidx_of_not_basic_svo_sent)
-            print("\nList of Not Basic SVO sent\n{}".format(sidx_of_not_basic_svo_sent))
+        sidx_of_not_basic_svo_sent = cls.get_sidx_of_not_basic_svo_sent(text_df)
+        unrepeatable_sidx_list.extend(sidx_of_not_basic_svo_sent)
+        print("\nList of Not Basic SVO sent\n{}".format(sidx_of_not_basic_svo_sent))
 
-            question_or_meaningless_sidx = cls.__get_question_or_meaningless_sidx(text_df, intent_list)
-            unrepeatable_sidx_list.extend(question_or_meaningless_sidx)
-            print("\nList of Question or Meaninglesss sidx sent\n{}".format(question_or_meaningless_sidx))
+        question_or_meaningless_sidx = cls.__get_question_or_meaningless_sidx(text_df, intent_list)
+        unrepeatable_sidx_list.extend(question_or_meaningless_sidx)
+        print("\nList of Question or Meaninglesss sidx sent\n{}".format(question_or_meaningless_sidx))
 
-            normal_and_too_long_sidx = cls.__get_sidx_of_normal_and_too_long_sent(text_df)
-            unrepeatable_sidx_list.extend(normal_and_too_long_sidx)
-            print("\nList of Normal and Too Long sidx sent\n{}".format(normal_and_too_long_sidx))
+        normal_and_too_long_sidx = cls.__get_sidx_of_normal_and_too_long_sent(text_df)
+        unrepeatable_sidx_list.extend(normal_and_too_long_sidx)
+        print("\nList of Normal and Too Long sidx sent\n{}".format(normal_and_too_long_sidx))
 
-            unrepeatable_sidx_list = list(set(unrepeatable_sidx_list))
+        unrepeatable_sidx_list = list(set(unrepeatable_sidx_list))
 
-            return unrepeatable_sidx_list
-        except Exception:
-            logging.exception(str(__name__))
-            return list(text_df.sidx)
+        return unrepeatable_sidx_list
 
     @classmethod
     def __get_sidx_of_normal_and_too_long_sent(cls, df):
-        try:
-            delete_sidx_list = []
-            for sidx in set(df.sidx.values):
-                target_df = df[df.sidx == sidx].copy().reset_index(drop=True)
-                if cls.__is_special_type(target_df):
-                    pass
+        delete_sidx_list = []
+        for sidx in set(df.sidx.values):
+            target_df = df[df.sidx == sidx].copy().reset_index(drop=True)
+            if cls.__is_special_type(target_df):
+                pass
+            else:
+                if len(WordFormatter.Series2Str(target_df.word)) > 75:
+                    delete_sidx_list.append(sidx)
                 else:
-                    if len(WordFormatter.Series2Str(target_df.word)) > 75:
-                        delete_sidx_list.append(sidx)
-                    else:
-                        pass
-            return delete_sidx_list
-
-        except:
-            logging.exception('')
-            return []
+                    pass
+        return delete_sidx_list
 
     @classmethod
     def __is_special_type(cls, df):
-        try:
-            if cls.__mean_no_friends(df):
-                return True
-            elif cls.__has_what_to_do(df):
-                return True
-
-            elif cls.__is_despising_himself(df):
-                return True
-
-            elif cls.__has_nobody_V(df):
-                return True
-
-            elif cls.__does_user_feel_useless(df):
-                return True
-
-            elif cls.__has_say_plus_bad_word(df):
-                return True
-
-            elif cls.__exists_want_to(df):
-                return True
-
-            elif cls.__exists_make_S_feel_ADJ(df):
-                return True
-
-            elif cls.__has_because(df):
-                return True
-
-            elif cls.__has_dont_think_SV_sent(df):
-                return True
-            elif cls.__has_need_NN(df):
-                return True
-            elif cls.__has_wish_S_V(df):
-                return True
-            else:
-                return False
-        except:
-            logging.exception('')
-            return False
+        return cls.__mean_no_friends(df) or \
+               cls.__has_what_to_do(df) or \
+               cls.__is_despising_himself(df) or \
+               cls.__has_nobody_V(df) or \
+               cls.__does_user_feel_useless(df) or \
+               cls.__has_say_plus_bad_word(df) or \
+               cls.__exists_want_to(df) or \
+               cls.__exists_make_S_feel_ADJ(df) or \
+               cls.__has_because(df) or \
+               cls.__has_dont_think_SV_sent(df) or \
+               cls.__has_need_NN(df) or \
+               cls.__has_wish_S_V(df)
 
     @staticmethod
     def __get_question_or_meaningless_sidx(text_df, intent_list):
-        try:
-            sidx_list = sorted(list(set(text_df.sidx)))
+        sidx_list = sorted(list(set(text_df.sidx)))
 
-            meaningless_sent_index = []
-            for sidx, intent in zip(sidx_list, intent_list):
-                df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
+        meaningless_sent_index = []
+        for sidx, intent in zip(sidx_list, intent_list):
+            df = text_df[text_df.sidx == sidx].copy().reset_index(drop=True)
 
-                if intent.value in [Intent.MEANINGLESS.value] + Intent.ALL_QUESTION_TYPES.value:
-                    meaningless_sent_index.append(sidx)
-                elif len(df) < 3:
-                    meaningless_sent_index.append(sidx)
+            if intent.value in [Intent.MEANINGLESS.value] + Intent.ALL_QUESTION_TYPES.value:
+                meaningless_sent_index.append(sidx)
+            elif len(df) < 3:
+                meaningless_sent_index.append(sidx)
 
-            return meaningless_sent_index
-        except:
-            logging.exception('')
-            return []
+        return meaningless_sent_index
 
     # sent doesnt consist of easy S,V,O such as "I like you"
     @staticmethod
     def get_sidx_of_not_basic_svo_sent(text_df):
-        try:
-            delete_sidx_list = []
-            for sidx in set(text_df.sidx.values):
-                df = text_df[text_df.sidx == sidx]
-                noun_list = Nlp_util.make_noun_list(df)
-                verb_list = Nlp_util.make_verb_list(df, type="normal")
+        delete_sidx_list = []
+        for sidx in set(text_df.sidx.values):
+            df = text_df[text_df.sidx == sidx]
+            noun_list = Nlp_util.make_noun_list(df)
+            verb_list = Nlp_util.make_verb_list(df, type="normal")
 
-                # catch the case such as "Dont judge me"
-                if Nlp_util.is_any_verb_before_first_noun(noun_list, verb_list):
-                    delete_sidx_list.append(sidx)
-                # catch the case such as "the situation horrible as like he said"
-                elif not Nlp_util.is_any_verb_for_first_noun(noun_list, verb_list):
-                    delete_sidx_list.append(sidx)
-                else:
-                    pass
+            # catch the case such as "Dont judge me"
+            if Nlp_util.is_any_verb_before_first_noun(noun_list, verb_list):
+                delete_sidx_list.append(sidx)
+            # catch the case such as "the situation horrible as like he said"
+            elif not Nlp_util.is_any_verb_for_first_noun(noun_list, verb_list):
+                delete_sidx_list.append(sidx)
+            else:
+                pass
 
-            return delete_sidx_list
-        except:
-            logging.exception('')
-            return []
+        return delete_sidx_list
 
     @classmethod
     def get_sentiment_of_repeat_target_sent(cls, text_df, sentiment_score_df):
-        try:
-            if text_df is None:
-                return None
+        if text_df is None:
+            return None
 
-            repeat_df = text_df
+        repeat_df = text_df
 
-            delete_sidx_list = list(
-                sentiment_score_df[sentiment_score_df.nscore.isin([0]) & sentiment_score_df.pscore.isin([0])].sidx)
-            delete_sidx_list.extend(list(text_df[text_df.word.isin(["you", "jullie", "j"])].sidx))
-            delete_sidx_list.extend(cls.__get_sidx_with_bad_words(repeat_df))
-            delete_sidx_list.extend(cls.get_sidx_of_not_basic_svo_sent(repeat_df))
+        delete_sidx_list = list(
+            sentiment_score_df[sentiment_score_df.nscore.isin([0]) & sentiment_score_df.pscore.isin([0])].sidx)
+        delete_sidx_list.extend(list(text_df[text_df.word.isin(["you", "jullie", "j"])].sidx))
+        delete_sidx_list.extend(cls.__get_sidx_with_bad_words(repeat_df))
+        delete_sidx_list.extend(cls.get_sidx_of_not_basic_svo_sent(repeat_df))
 
-            if len(set(delete_sidx_list)) == len(set(repeat_df.sidx.values)):
-                return None
-            target_sentiment_score_df = sentiment_score_df[~sentiment_score_df.sidx.isin(list(set(delete_sidx_list)))]
-            print("\nTarget Sentiment Score Df\n{}".format(target_sentiment_score_df))
+        if len(set(delete_sidx_list)) == len(set(repeat_df.sidx.values)):
+            return None
+        target_sentiment_score_df = sentiment_score_df[~sentiment_score_df.sidx.isin(list(set(delete_sidx_list)))]
+        print("\nTarget Sentiment Score Df\n{}".format(target_sentiment_score_df))
 
-            if any(abs(target_sentiment_score_df.nscore) > 0) and any(target_sentiment_score_df.pscore > 0):
-                return "neutral"
-            elif any(abs(target_sentiment_score_df.nscore) > 0) and all(target_sentiment_score_df.pscore == 0):
-                return "negative"
-            elif all(abs(target_sentiment_score_df.nscore) == 0) and any(target_sentiment_score_df.pscore > 0):
-                return "positive"
-            else:
-                return None
-
-        except Exception:
-            logging.exception('Error at generate_repeat in ' + str(__name__))
+        if any(abs(target_sentiment_score_df.nscore) > 0) and any(target_sentiment_score_df.pscore > 0):
+            return "neutral"
+        elif any(abs(target_sentiment_score_df.nscore) > 0) and all(target_sentiment_score_df.pscore == 0):
+            return "negative"
+        elif all(abs(target_sentiment_score_df.nscore) == 0) and any(target_sentiment_score_df.pscore > 0):
+            return "positive"
+        else:
             return None
 
     @staticmethod

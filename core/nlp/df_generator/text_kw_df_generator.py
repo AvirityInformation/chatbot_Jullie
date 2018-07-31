@@ -9,7 +9,8 @@ from core.nlp.response_generator.product.cct.reaction_generator import SP_I_DF
 class TextKwDFGenerator:
     def __call__(self, text_df):
         """
-
+        This method creates a df with information of keywords in message.
+        columns are sidx, widx, word, target, emphasis, ng, iscore, kw_type, special
         :param text_df:
         :return:
         """
@@ -42,32 +43,27 @@ class TextKwDFGenerator:
 
     @classmethod
     def __add_points_text_kw_df(cls, text_df, text_kw_df):
-        try:
-            text_kw_df['ng'] = cls.__get_matched_negative_flags(text_df, text_kw_df)
+        text_kw_df['ng'] = cls.__get_matched_negative_flags(text_df, text_kw_df)
 
-            text_kw_df["iscore"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index().score,
-                                                    axis=1)
-            text_kw_df["kw_type"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index()['Type'],
-                                                     axis=1)
-            text_kw_df["sscore"] = text_kw_df.apply(lambda row: row.iscore * -1 if row.kw_type == "n" else row.iscore,
-                                                    axis=1)
-            text_kw_df = cls.__calculate_negative_keyword_score(text_kw_df)
+        text_kw_df["iscore"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index().score,
+                                                axis=1)
+        text_kw_df["kw_type"] = text_kw_df.apply(lambda row: KWDF[KWDF.keyword == row.word].reset_index()['Type'],
+                                                 axis=1)
+        text_kw_df["sscore"] = text_kw_df.apply(lambda row: row.iscore * -1 if row.kw_type == "n" else row.iscore,
+                                                axis=1)
+        text_kw_df = cls.__calculate_negative_keyword_score(text_kw_df)
 
-            text_kw_df = cls.__calculate_emphasis_point(text_kw_df)
+        text_kw_df = cls.__calculate_emphasis_point(text_kw_df)
 
-            text_kw_df["special"] = text_kw_df.apply(
-                lambda row: SP_I_DF[SP_I_DF.word == row.word].id.values[
-                    0] if row.word in SP_I_DF.word.tolist() else 'normal',
-                axis=1)
+        text_kw_df["special"] = text_kw_df.apply(
+            lambda row: SP_I_DF[SP_I_DF.word == row.word].id.values[
+                0] if row.word in SP_I_DF.word.tolist() else 'normal',
+            axis=1)
 
-            text_kw_df['fact'] = text_kw_df.apply(
-                lambda row: True if row[2] in KWDF[KWDF.fact == 'TRUE'].keyword.values else False if row[2] in KWDF[
-                    KWDF.fact == 'FALSE'].keyword.values else None, axis=1)
-            return text_kw_df
-
-        except Exception:
-            logging.exception('Error at: ' + str(__name__))
-            return None
+        text_kw_df['fact'] = text_kw_df.apply(
+            lambda row: True if row[2] in KWDF[KWDF.fact == 'TRUE'].keyword.values else False if row[2] in KWDF[
+                KWDF.fact == 'FALSE'].keyword.values else None, axis=1)
+        return text_kw_df
 
     @classmethod
     def __find_keywords_from_csv(cls, text_df, sidx, widx, word):

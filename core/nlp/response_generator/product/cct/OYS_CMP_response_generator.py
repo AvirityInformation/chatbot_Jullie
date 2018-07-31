@@ -1,19 +1,18 @@
 from core.nlp.response_generator.product.base.base_response_generator import BaseResponseGenerator
-import logging
 import numpy as np
 
 
 class OYSCMPResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates OYS(On Your Side) and Cmp(Compassion) responses
+    """
+
     def __call__(self):
-        try:
-            responses = self.__create_oys_after_cmp()
+        responses = self.__create_oys_after_cmp()
 
-            self.response_data['regular'] = responses
+        self.response_data['regular'] = responses
 
-            return self.response_data
-        except:
-            logging.exception('')
-            return self.response_data
+        return self.response_data
 
     def __create_oys_after_cmp(self):
         options = [
@@ -21,5 +20,7 @@ class OYSCMPResponseGenerator(BaseResponseGenerator):
             ["I am sorry for you..😢", "Just vent me anything you want"],
             ["Life is not always easy right☹️", "Let me just be with you"]
         ]
+
         np.random.shuffle(options)
+
         return options[0]

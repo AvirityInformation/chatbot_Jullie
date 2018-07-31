@@ -3,15 +3,15 @@ import numpy as np
 
 
 class AboutBreakupResponseGenerator(BaseResponseGenerator):
+    """
+    This class deal with message meaning breakup.
+    """
     def __call__(self):
-        try:
-            response = self.__create_response_about_breakup()
+        response = self.__create_response_about_breakup()
 
-            self.set_regular_response(response)
+        self.set_regular_response(response)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     @classmethod
     def __create_response_about_breakup(cls):

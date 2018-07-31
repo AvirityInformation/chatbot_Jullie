@@ -3,15 +3,16 @@ from random import randint
 
 
 class DisrespectResponseGenerator(BaseResponseGenerator):
+    """
+    This class creates response to users who says disrespectful words.
+    """
+
     def __call__(self):
-        try:
-            responses = self.__create_response_of_apology()
+        responses = self.__create_response_of_apology()
 
-            self.set_regular_response(responses)
+        self.set_regular_response(responses)
 
-            return self.response_data
-        except:
-            return self.get_error_response_data()
+        return self.response_data
 
     @staticmethod
     def __create_response_of_apology():

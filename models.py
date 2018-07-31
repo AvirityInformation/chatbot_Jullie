@@ -127,148 +127,123 @@ class User(Base):
     @classmethod
     def find_possible_remind_users(cls):
         with SessionFactory.create() as db_session:
-            try:
-                filter_1 = cls.created_at > datetime(2018, 5, 9)
+            filter_1 = cls.created_at > datetime(2018, 5, 9)
 
-                filter_2 = ~cls.status.in_(
-                    [UserStatus.GET_STARTED.value, UserStatus.INTRO.value, UserStatus.SUICIDE_ILLNESS_INTRO.value,
-                     UserStatus.SUICIDE_IN_SESSION.value])
+            filter_2 = ~cls.status.in_(
+                [UserStatus.GET_STARTED.value, UserStatus.INTRO.value, UserStatus.SUICIDE_ILLNESS_INTRO.value,
+                 UserStatus.SUICIDE_IN_SESSION.value])
 
-                possible_remind_users = db_session.query(cls.id) \
-                    .filter(and_(filter_1, filter_2)).order_by(cls.id).all()
+            possible_remind_users = db_session.query(cls.id) \
+                .filter(and_(filter_1, filter_2)).order_by(cls.id).all()
 
-                possible_remind_users = [i[0] for i in possible_remind_users]
+            possible_remind_users = [i[0] for i in possible_remind_users]
 
-                return possible_remind_users
-            except:
-                logging.exception('')
+            return possible_remind_users
 
     @classmethod
     def find_unfinished_message_users(cls):
         with SessionFactory.create() as db_session:
-            try:
-                interval = 20
+            interval = 20
 
-                unfinished_message_users = db_session \
-                    .query(cls.id) \
-                    .filter(
-                    exists().where(
-                        and_(
-                            Message.user_id == cls.id,
-                            Message.created_at > datetime.utcnow() - timedelta(seconds=interval)
-                        )
+            unfinished_message_users = db_session \
+                .query(cls.id) \
+                .filter(
+                exists().where(
+                    and_(
+                        Message.user_id == cls.id,
+                        Message.created_at > datetime.utcnow() - timedelta(seconds=interval)
                     )
-                ).all()
+                )
+            ).all()
 
-                unfinished_message_users = [i[0] for i in unfinished_message_users]
+            unfinished_message_users = [i[0] for i in unfinished_message_users]
 
-                return unfinished_message_users
-            except:
-                logging.exception('')
-                return []
+            return unfinished_message_users
 
     @classmethod
     def find_intro_users(cls, unread_messages):
         with SessionFactory.create() as db_session:
-            try:
-                intro_users = db_session \
-                    .query(cls.id) \
-                    .filter(
-                    and_(
-                        cls.id.in_([i[0] for i in unread_messages]),
-                        cls.status.in_([0, 1, 7])
-                    )
-                ).all()
+            intro_users = db_session \
+                .query(cls.id) \
+                .filter(
+                and_(
+                    cls.id.in_([i[0] for i in unread_messages]),
+                    cls.status.in_([0, 1, 7])
+                )
+            ).all()
 
-                if intro_users:
-                    intro_users = [i[0] for i in intro_users]
+            if intro_users:
+                intro_users = [i[0] for i in intro_users]
 
-                return intro_users
-            except:
-                logging.exception('')
-                return []
+            return intro_users
 
     @classmethod
     def find_inactivated_user_ids(cls):
         with SessionFactory.create() as db_session:
-            try:
-                inactivated_sessions = db_session \
-                    .query(Session.user_id) \
-                    .filter(
-                    and_(
-                        Session.status == SessionStatus.active.value,
-                        Session.finish_at < datetime.utcnow() - timedelta(minutes=5),
-                        Session.created_at > datetime(year=2018, month=6, day=22)
-                    )
-                ).distinct(Session.user_id).all()
+            inactivated_sessions = db_session \
+                .query(Session.user_id) \
+                .filter(
+                and_(
+                    Session.status == SessionStatus.active.value,
+                    Session.finish_at < datetime.utcnow() - timedelta(minutes=5),
+                    Session.created_at > datetime(year=2018, month=6, day=22)
+                )
+            ).distinct(Session.user_id).all()
 
-                if inactivated_sessions:
-                    inactivated_user_ids = [i[0] for i in inactivated_sessions]
-                else:
-                    inactivated_user_ids = []
+            if inactivated_sessions:
+                inactivated_user_ids = [i[0] for i in inactivated_sessions]
+            else:
+                inactivated_user_ids = []
 
-                print("\nINACTIVATED_USER\n{}".format(inactivated_user_ids))
+            print("\nINACTIVATED_USER\n{}".format(inactivated_user_ids))
 
-                return inactivated_user_ids
-            except:
-                logging.exception('')
-                return []
+            return inactivated_user_ids
 
     @classmethod
     def find_sender_id_by_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                sender_id = db_session \
-                    .query(cls.sender_id) \
-                    .filter(cls.id == user_id).limit(1).all()[0][0]
+            sender_id = db_session \
+                .query(cls.sender_id) \
+                .filter(cls.id == user_id).limit(1).all()[0][0]
 
-                return sender_id
-            except:
-                logging.exception('')
+            return sender_id
 
     @classmethod
     def find_users_in_worker(cls, finished_messages):
         with SessionFactory.create() as db_session:
-            try:
-                finished_message_users = [i[0] for i in finished_messages]
+            finished_message_users = [i[0] for i in finished_messages]
 
-                users_in_worker = db_session \
-                    .query(cls.id) \
-                    .filter(
-                    and_(
-                        cls.id.in_(finished_message_users),
-                        exists().where(
-                            and_(
-                                Message.user_id == cls.id,
-                                Message.read_flag == 1,
-                                Message.status == 0,
-                                Message.created_at > datetime.utcnow() - timedelta(minutes=3)
-                            )
+            users_in_worker = db_session \
+                .query(cls.id) \
+                .filter(
+                and_(
+                    cls.id.in_(finished_message_users),
+                    exists().where(
+                        and_(
+                            Message.user_id == cls.id,
+                            Message.read_flag == 1,
+                            Message.status == 0,
+                            Message.created_at > datetime.utcnow() - timedelta(minutes=3)
                         )
                     )
-                ).all()
+                )
+            ).all()
 
-                users_in_worker = [i[0] for i in users_in_worker]
+            users_in_worker = [i[0] for i in users_in_worker]
 
-                if not users_in_worker:
-                    return []
-                else:
-                    return users_in_worker
-            except:
-                logging.exception('')
+            if not users_in_worker:
                 return []
+            else:
+                return users_in_worker
 
     @classmethod
     def find_first_name_by_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                first_name = db_session \
-                    .query(cls.first_name) \
-                    .filter(cls.id == user_id).all()[0][0]
+            first_name = db_session \
+                .query(cls.first_name) \
+                .filter(cls.id == user_id).all()[0][0]
 
-                return first_name
-            except:
-                logging.exception('')
+            return first_name
 
 
 class MessageCluster(Base):
@@ -296,35 +271,28 @@ class MessageCluster(Base):
     @classmethod
     def find_id_by_user_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                cluster_id = db_session \
-                    .query(cls.id) \
-                    .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
+            cluster_id = db_session \
+                .query(cls.id) \
+                .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
 
-                cluster_id = cluster_id[0][0]
+            cluster_id = cluster_id[0][0]
 
-                return cluster_id
-            except:
-                logging.exception('')
+            return cluster_id
 
     @classmethod
     def find_last_2_message_cluster_time(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                last_two_message_cluster_time = db_session \
-                    .query(
-                    cls.created_at
-                ) \
-                    .filter(
-                    cls.user_id == user_id
-                ).order_by(desc(cls.created_at)).limit(2).all()
+            last_two_message_cluster_time = db_session \
+                .query(
+                cls.created_at
+            ) \
+                .filter(
+                cls.user_id == user_id
+            ).order_by(desc(cls.created_at)).limit(2).all()
 
-                last_two_message_cluster_time = [i[0] for i in last_two_message_cluster_time]
+            last_two_message_cluster_time = [i[0] for i in last_two_message_cluster_time]
 
-                return last_two_message_cluster_time
-            except:
-                logging.exception('')
-                return []
+            return last_two_message_cluster_time
 
 
 class Reaction(Base):
@@ -407,25 +375,21 @@ class Reaction(Base):
     @classmethod
     def find_used_reaction_number(cls, user_id, reaction_type):
         with SessionFactory.create() as db_session:
-            try:
-                cls.enable_old_reactions(user_id)
+            cls.enable_old_reactions(user_id)
 
-                used_reaction_number = db_session \
-                    .query(cls.reaction_id) \
-                    .filter(
-                    and_(
-                        cls.user_id == user_id,
-                        cls.reaction_type == reaction_type,
-                        cls.status == 0
-                    )
-                ).all()
+            used_reaction_number = db_session \
+                .query(cls.reaction_id) \
+                .filter(
+                and_(
+                    cls.user_id == user_id,
+                    cls.reaction_type == reaction_type,
+                    cls.status == 0
+                )
+            ).all()
 
-                used_reaction_number = [i[0] for i in used_reaction_number]
+            used_reaction_number = [i[0] for i in used_reaction_number]
 
-                return used_reaction_number
-            except:
-                logging.exception('')
-                return []
+            return used_reaction_number
 
 
 class Session(Base):
@@ -458,48 +422,39 @@ class Session(Base):
     @classmethod
     def find_latest_id_by_user_id(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                user_session = db_session \
-                    .query(cls) \
-                    .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
+            user_session = db_session \
+                .query(cls) \
+                .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
 
-                if user_session:
-                    return user_session[0].id
-                else:
-                    return None
-            except:
-                logging.exception('')
+            if user_session:
+                return user_session[0].id
+            else:
+                return None
 
     @classmethod
     def find_latest_session_finish_at(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                latest_session_time = db_session \
-                    .query(cls.finish_at) \
-                    .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()[0][0]
+            latest_session_time = db_session \
+                .query(cls.finish_at) \
+                .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()[0][0]
 
-                if latest_session_time:
-                    return latest_session_time
-                else:
-                    return None
-            except:
-                logging.exception('')
+            if latest_session_time:
+                return latest_session_time
+            else:
+                return None
 
     @classmethod
     def find_latest_session_data(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                user_session = db_session \
-                    .query(cls.id, cls.user_id, cls.status, cls.finish_at) \
-                    .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
+            user_session = db_session \
+                .query(cls.id, cls.user_id, cls.status, cls.finish_at) \
+                .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()
 
-                if user_session:
-                    user_session = [i._asdict() for i in user_session][0]
-                    return user_session
-                else:
-                    return None
-            except:
-                logging.exception('')
+            if user_session:
+                user_session = [i._asdict() for i in user_session][0]
+                return user_session
+            else:
+                return None
 
     @classmethod
     def update_status(cls, session_id, status):
@@ -530,15 +485,12 @@ class Session(Base):
     @classmethod
     def update_latest_session_status(cls, session_status: SessionStatus, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                session_to_update = db_session \
-                    .query(cls) \
-                    .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()[0]
+            session_to_update = db_session \
+                .query(cls) \
+                .filter(cls.user_id == user_id).order_by(desc(cls.id)).limit(1).all()[0]
 
-                if session_to_update:
-                    session_to_update.status = session_status
-            except:
-                logging.exception('')
+            if session_to_update:
+                session_to_update.status = session_status
 
     @classmethod
     def save_comment_end(cls, session_id, message):
@@ -635,35 +587,26 @@ class Session(Base):
     @classmethod
     def fetch_session_started_time(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                session_started_time = db_session \
-                    .query(
-                    Session.created_at
-                ).filter(
-                    Session.user_id == user_id,
-                ).order_by(Session.created_at.desc()).all()[0][0]
+            session_started_time = db_session \
+                .query(
+                Session.created_at
+            ).filter(
+                Session.user_id == user_id,
+            ).order_by(Session.created_at.desc()).all()[0][0]
 
-                return session_started_time
-            except:
-                logging.exception('')
-                return ""
+            return session_started_time
 
     @staticmethod
     def fetch_session_ended_time(user_id):
         with SessionFactory.create() as db_session:
-            try:
-                session_ended_time = db_session \
-                    .query(
-                    Session.finish_at
-                ).filter(
-                    Session.user_id == user_id,
-                ).order_by(Session.created_at.desc()).all()[0][0]
+            session_ended_time = db_session \
+                .query(
+                Session.finish_at
+            ).filter(
+                Session.user_id == user_id,
+            ).order_by(Session.created_at.desc()).all()[0][0]
 
-                return session_ended_time
-
-            except:
-                logging.exception('')
-                return ""
+            return session_ended_time
 
 
 class Message(Base):
@@ -686,67 +629,57 @@ class Message(Base):
     @classmethod
     def find_unread_messages(cls):
         with SessionFactory.create() as db_session:
-            try:
-                unread_messages = db_session \
-                    .query(
-                    cls.user_id,
-                    cls.message,
-                    cls.id
-                ) \
-                    .filter(
-                    and_(
-                        cls.read_flag == 0,
-                        cls.status == 0
-                    )
-                ) \
-                    .order_by(cls.user_id).all()
+            unread_messages = db_session \
+                .query(
+                cls.user_id,
+                cls.message,
+                cls.id
+            ) \
+                .filter(
+                and_(
+                    cls.read_flag == 0,
+                    cls.status == 0
+                )
+            ) \
+                .order_by(cls.user_id).all()
 
-                return unread_messages
-            except:
-                logging.exception('')
-                return []
+            return unread_messages
 
     @classmethod
     def find_cluster_id(cls, message_dict):
         with SessionFactory.create() as db_session:
-            try:
-                message_id_list = [i['id'] for i in message_dict]
+            message_id_list = [i['id'] for i in message_dict]
 
-                cluster_id = db_session \
-                    .query(
-                    cls.cluster_id
-                ) \
-                    .filter(
-                    cls.id.in_(message_id_list)
-                ).limit(1).all()
+            cluster_id = db_session \
+                .query(
+                cls.cluster_id
+            ) \
+                .filter(
+                cls.id.in_(message_id_list)
+            ).limit(1).all()
 
-                if cluster_id:
-                    return cluster_id[0][0]
-                else:
-                    return None
-            except:
-                logging.exception('')
+            if cluster_id:
+                return cluster_id[0][0]
+            else:
+                return None
 
     @classmethod
     def find_latest_message_time(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                latest_message_time = db_session \
-                    .query(
-                    cls.created_at
-                ) \
-                    .filter(
-                    cls.user_id == user_id
-                ).order_by(desc(cls.id)).limit(1).all()
+            latest_message_time = db_session \
+                .query(
+                cls.created_at
+            ) \
+                .filter(
+                cls.user_id == user_id
+            ).order_by(desc(cls.id)).limit(1).all()
 
-                if not latest_message_time:
-                    return None
-                else:
-                    latest_message_time = latest_message_time[0][0]
+            if not latest_message_time:
+                return None
+            else:
+                latest_message_time = latest_message_time[0][0]
 
-                return latest_message_time
-            except:
-                logging.exception('')
+            return latest_message_time
 
     @classmethod
     def tag_msg_by_session_id(cls, session_id, message_id_list):
@@ -786,43 +719,35 @@ class Message(Base):
     @classmethod
     def has_user_sent_new_message(cls, user_id, message_id_list):
         with SessionFactory.create() as db_session:
-            try:
-                new_message = db_session \
-                    .query(cls) \
-                    .filter(
-                    and_(
-                        cls.user_id == user_id,
-                        cls.id > max(message_id_list)
-                    )
-                ).all()
+            new_message = db_session \
+                .query(cls) \
+                .filter(
+                and_(
+                    cls.user_id == user_id,
+                    cls.id > max(message_id_list)
+                )
+            ).all()
 
-                if new_message:
-                    return True
-                else:
-                    return False
-            except:
-                logging.exception('')
+            if new_message:
+                return True
+            else:
                 return False
 
     @classmethod
     def find_second_last_message_time(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                second_last_message_time = db_session \
-                    .query(
-                    cls.created_at
-                ) \
-                    .filter(
-                    and_(
-                        cls.user_id == user_id,
-                        cls.read_flag == 1
-                    )
-                ).order_by(desc(cls.id)).limit(2).all()
+            second_last_message_time = db_session \
+                .query(
+                cls.created_at
+            ) \
+                .filter(
+                and_(
+                    cls.user_id == user_id,
+                    cls.read_flag == 1
+                )
+            ).order_by(desc(cls.id)).limit(2).all()
 
-                return second_last_message_time[1][0]
-            except:
-                logging.exception('')
-                return []
+            return second_last_message_time[1][0]
 
     @classmethod
     def update_read_flag(cls, status, message_id):
@@ -938,62 +863,51 @@ class Message(Base):
     @classmethod
     def fetch_previous_msg(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                latest_cluster_id = db_session \
-                    .query(
-                    Message.cluster_id
-                ) \
-                    .filter(
-                    Message.user_id == user_id
-                ) \
-                    .order_by(
-                    desc(Message.created_at)).limit(1).all()[0][0]
+            latest_cluster_id = db_session \
+                .query(
+                Message.cluster_id
+            ) \
+                .filter(
+                Message.user_id == user_id
+            ) \
+                .order_by(
+                desc(Message.created_at)).limit(1).all()[0][0]
 
-                if latest_cluster_id is None:
-                    return ""
-
-                previous_msg_list = db_session \
-                    .query(
-                    Message.message
-                ) \
-                    .filter(
-                    Message.user_id == user_id,
-                    Message.cluster_id == latest_cluster_id - 1
-                ) \
-                    .all()[0]
-
-                if len(previous_msg_list) == 0 or previous_msg_list is None:
-                    return ""
-
-                else:
-                    return previous_msg_list[0]
-
-            except:
-                logging.exception('')
+            if latest_cluster_id is None:
                 return ""
+
+            previous_msg_list = db_session \
+                .query(
+                Message.message
+            ) \
+                .filter(
+                Message.user_id == user_id,
+                Message.cluster_id == latest_cluster_id - 1
+            ) \
+                .all()[0]
+
+            if len(previous_msg_list) == 0 or previous_msg_list is None:
+                return ""
+
+            else:
+                return previous_msg_list[0]
 
     @classmethod
     def count_total_msg_in_session(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                session_started_time = Session.fetch_session_started_time(user_id)
-                session_ended_time = Session.fetch_session_ended_time(user_id)
-                total_number_of_msg_in_session = db_session \
-                    .query(
-                    Message
-                ) \
-                    .filter(
-                    Message.user_id == user_id,
-                    Message.created_at > session_started_time,
-                    Message.created_at < session_ended_time
-                ).count()
+            session_started_time = Session.fetch_session_started_time(user_id)
+            session_ended_time = Session.fetch_session_ended_time(user_id)
+            total_number_of_msg_in_session = db_session \
+                .query(
+                Message
+            ) \
+                .filter(
+                Message.user_id == user_id,
+                Message.created_at > session_started_time,
+                Message.created_at < session_ended_time
+            ).count()
 
-                return total_number_of_msg_in_session
-
-
-            except:
-                logging.exception('')
-                return ""
+            return total_number_of_msg_in_session
 
 
 class Response(Base):
@@ -1035,45 +949,37 @@ class Response(Base):
     @classmethod
     def exists_future_message(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                response_id = db_session \
-                    .query(cls.id) \
-                    .filter(
-                    and_(
-                        cls.user_id == user_id,
-                        cls.sent_flag == 0
-                    )
-                ).order_by(cls.sent_at).limit(1).all()
+            response_id = db_session \
+                .query(cls.id) \
+                .filter(
+                and_(
+                    cls.user_id == user_id,
+                    cls.sent_flag == 0
+                )
+            ).order_by(cls.sent_at).limit(1).all()
 
-                if response_id:
-                    return True
-                else:
-                    return False
-            except:
-                logging.exception('')
+            if response_id:
+                return True
+            else:
                 return False
 
     @classmethod
     def find_unsent_message_data(cls):
         with SessionFactory.create() as db_session:
-            try:
-                unsent_messages = db_session \
-                    .query(
-                    cls.id,
-                    cls.user_id,
-                    cls.response
-                ) \
-                    .filter(
-                    and_(
-                        cls.sent_at < datetime.utcnow(),
-                        cls.sent_flag == 0
-                    )
-                ).order_by(cls.id).all()
+            unsent_messages = db_session \
+                .query(
+                cls.id,
+                cls.user_id,
+                cls.response
+            ) \
+                .filter(
+                and_(
+                    cls.sent_at < datetime.utcnow(),
+                    cls.sent_flag == 0
+                )
+            ).order_by(cls.id).all()
 
-                return unsent_messages
-            except:
-                logging.exception('')
-                return []
+            return unsent_messages
 
     @classmethod
     def update_response_sent_flag(cls, unsent_messages):
@@ -1103,95 +1009,77 @@ class Response(Base):
     @classmethod
     def find_past_3_response_types(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                last_3_cluster_ids = db_session \
-                    .query(MessageCluster.id) \
-                    .filter(MessageCluster.user_id == user_id).order_by(desc(MessageCluster.id)).limit(3).all()
+            last_3_cluster_ids = db_session \
+                .query(MessageCluster.id) \
+                .filter(MessageCluster.user_id == user_id).order_by(desc(MessageCluster.id)).limit(3).all()
 
-                last_3_cluster_ids = [i[0] for i in last_3_cluster_ids]
+            last_3_cluster_ids = [i[0] for i in last_3_cluster_ids]
 
-                past_response_types = db_session \
-                    .query(
-                    cls.cluster_id,
-                    cls.type
-                ) \
-                    .filter(cls.cluster_id.in_(last_3_cluster_ids)).order_by(cls.cluster_id).all()
+            past_response_types = db_session \
+                .query(
+                cls.cluster_id,
+                cls.type
+            ) \
+                .filter(cls.cluster_id.in_(last_3_cluster_ids)).order_by(cls.cluster_id).all()
 
-                if past_response_types:
-                    response_types = []
-                    for cluster_id in last_3_cluster_ids:
-                        r_types = [i[1].split(' ') for i in past_response_types if i[0] == cluster_id]
+            if past_response_types:
+                response_types = []
+                for cluster_id in last_3_cluster_ids:
+                    r_types = [i[1].split(' ') for i in past_response_types if i[0] == cluster_id]
 
-                        if r_types:
-                            response_types += r_types[0]
+                    if r_types:
+                        response_types += r_types[0]
 
-                    return response_types
-                else:
-                    return []
-            except:
-                logging.exception('')
+                return response_types
+            else:
                 return []
 
     @classmethod
     def fetch_last_response_type_list(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                last_response_types = db_session \
-                    .query(
-                    Response.type
-                ) \
-                    .filter(
-                    Response.user_id == user_id
-                ).order_by(desc(Response.created_at)).limit(3).all()[0][0].split()
+            last_response_types = db_session \
+                .query(
+                Response.type
+            ) \
+                .filter(
+                Response.user_id == user_id
+            ).order_by(desc(Response.created_at)).limit(3).all()[0][0].split()
 
-                return last_response_types
-            except:
-                logging.exception('')
-                return []
+            return last_response_types
 
     @classmethod
     def fetch_all_response_type_during(cls, session_started_time, session_ended_time, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                past_response_types = db_session \
-                    .query(
-                    Response.cluster_id,
-                    Response.type
-                ) \
-                    .filter(
-                    Response.user_id == user_id,
-                    Response.created_at > session_started_time,
-                    Response.created_at < session_ended_time
-                ).all()
+            past_response_types = db_session \
+                .query(
+                Response.cluster_id,
+                Response.type
+            ) \
+                .filter(
+                Response.user_id == user_id,
+                Response.created_at > session_started_time,
+                Response.created_at < session_ended_time
+            ).all()
 
-                return past_response_types
-            except:
-                logging.exception('')
-                return []
+            return past_response_types
 
     @classmethod
     def fetch_previous_msg_response_type(cls, user_id):
         # TODO see the previous response type and return correct response type
         with SessionFactory.create() as db_session:
-            try:
-                previous__msg_response_type_list = db_session \
-                    .query(
-                    Response.type
-                ) \
-                    .filter(
-                    Response.user_id == user_id
-                ) \
-                    .order_by(desc(Response.id)).limit(1).all()[0]
+            previous__msg_response_type_list = db_session \
+                .query(
+                Response.type
+            ) \
+                .filter(
+                Response.user_id == user_id
+            ) \
+                .order_by(desc(Response.id)).limit(1).all()[0]
 
-                if len(previous__msg_response_type_list) == 0 or previous__msg_response_type_list is None:
-                    return []
-                else:
-                    return previous__msg_response_type_list[0].split()
-
-
-            except:
-                logging.exception('')
+            if len(previous__msg_response_type_list) == 0 or previous__msg_response_type_list is None:
                 return []
+            else:
+                return previous__msg_response_type_list[0].split()
 
 
 class Remind(Base):
@@ -1219,39 +1107,33 @@ class Remind(Base):
     @classmethod
     def find_latest_remind_time(cls, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                latest_remind_time = db_session \
-                    .query(
-                    cls.created_at
-                ) \
-                    .filter(
-                    cls.user_id == user_id
-                ).order_by(desc(cls.id)).limit(1).all()
+            latest_remind_time = db_session \
+                .query(
+                cls.created_at
+            ) \
+                .filter(
+                cls.user_id == user_id
+            ).order_by(desc(cls.id)).limit(1).all()
 
-                if latest_remind_time:
-                    return latest_remind_time[0]
-                else:
-                    return None
-            except:
-                logging.exception('')
+            if latest_remind_time:
+                return latest_remind_time[0]
+            else:
+                return None
 
     @classmethod
     def find_reminds_by_created_at(cls, user_id, time):
         with SessionFactory.create() as db_session:
-            try:
-                # TODO can't pass remind class. find remind here
-                remind = db_session \
-                    .query(cls) \
-                    .filter(
-                    and_(
-                        cls.user_id == user_id,
-                        cls.created_at > time
-                    )
-                ).order_by(desc(cls.id)).all()
+            # TODO can't pass remind class. find remind here
+            remind = db_session \
+                .query(cls) \
+                .filter(
+                and_(
+                    cls.user_id == user_id,
+                    cls.created_at > time
+                )
+            ).order_by(desc(cls.id)).all()
 
-                return remind
-            except:
-                logging.exception('')
+            return remind
 
     @classmethod
     def register_remind_mood(cls, mood: str, user_id):
@@ -1281,23 +1163,20 @@ class UsersFeeling(Base):
     @classmethod
     def save_feelings(cls, text_kw_df, user_id):
         with SessionFactory.create() as db_session:
-            try:
-                if text_kw_df is None:
-                    return []
+            if text_kw_df is None:
+                return []
 
-                negative_feeling_df = text_kw_df[text_kw_df.fact.isin([False]) & (text_kw_df.sscore < 0)]
+            negative_feeling_df = text_kw_df[text_kw_df.fact.isin([False]) & (text_kw_df.sscore < 0)]
 
-                if negative_feeling_df.empty:
-                    return
+            if negative_feeling_df.empty:
+                return
 
-                for idx, row in negative_feeling_df.iterrows():
-                    new_feeling = cls()
-                    new_feeling.user_id = user_id
-                    new_feeling.keyword = row.word
+            for idx, row in negative_feeling_df.iterrows():
+                new_feeling = cls()
+                new_feeling.user_id = user_id
+                new_feeling.keyword = row.word
 
-                    db_session.add(new_feeling)
-            except:
-                logging.exception('')
+                db_session.add(new_feeling)
 
 
 class IntroPosition(Base):
