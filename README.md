@@ -64,14 +64,14 @@ Also check the 'messaging', 'messaging_postback' boxes.
 
 #### 4.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
 Go to dialogflow console.  
-Add prebuild agent 'Small Talk' from left menu "Prebuilt Agents".
+Add prebuild agent 'Small Talk' from left menu "Prebuilt Agents".  
 Select "Create a new Google project" when adding an agent.    
 
 Click on the setting icon of the agent and get client access token.
 
 Then execute following command to set it to heroku env variables.  
-heroku config:set client_access_token=ooo -a xxx
-heroku config:set session_id=### -a xxx
+heroku config:set client_access_token=ooo -a xxx  
+heroku config:set session_id=### -a xxx  
 (Replace ### with any string)    
 
 #### 5.set queue  
