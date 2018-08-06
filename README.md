@@ -49,14 +49,14 @@ Create an app there and go to its dashboard.
 
 From "Product" section, find "Messenger" pane.
 
-Create an page access token by selecting facebook page you created in step 2.
-Then you will get a page access token.
-Then run this code to set it as a heroku env variable.
+Create an page access token by selecting facebook page you created in step 2.  
+Then you will get a page access token.  
+Then run this code to set it as a heroku env variable.  
 heroku config:set PAGE_ACCESS_TOKEN=ooo -a xxx    
 
-From the "Webhook" section in "Messenger" pane, click on "Setup webhook" from "Messenger" section. 
+From the "Webhook" section in "Messenger" pane, click on "Setup webhook" from "Messenger" section.   
 Then you will see a window requiring 2 values.
-"callback url": This is a url of your heroku app.
+"callback url": This is a url of your heroku app.    
 "verify token": This is the string you set in the step 1 as "VERIFY_TOKEN". 
 Also check the 'messaging', 'messaging_postback' boxes.
 
