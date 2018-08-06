@@ -117,5 +117,7 @@ class CCTResponseGeneratorFactory(BaseResponseGeneratorFactory):
 
         elif msg_type == MsgType.MISSING.value:
             return MissingResponseGenerator(*args)
+        elif msg_type == MsgType.ASK_FEED_BACK.value:
+            return
         else:
             raise UnknownError

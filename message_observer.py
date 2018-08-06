@@ -80,12 +80,12 @@ def get_unsent_responses():
         return []
 
 
-def ask_feecback():
-    bot = FeedbackBot()
-
-    inactivated_users = bot.find_inactivated_users()
-
-    bot.ask_feed_back(inactivated_users)
+# def ask_feecback():
+#     bot = FeedbackBot()
+#
+#     inactivated_users = bot.find_inactivated_users()
+#
+#     bot.ask_feed_back(inactivated_users)
 
 
 if __name__ == '__main__':
@@ -94,6 +94,6 @@ if __name__ == '__main__':
     while True:
         if datetime.utcnow() > last_feed_back_time + timedelta(minutes=5):
             last_feed_back_time = datetime.utcnow()
-            ask_feecback()
+            # ask_feecback()
         fetch_regularly()
         send_response_regularly()
