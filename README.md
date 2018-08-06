@@ -25,40 +25,46 @@ Jullie replies to users with compassion.
 
 # Instruction
 #### 1. Make an app on Heroku
+Make an app on Heroku.
+
+Run this command in terminal(Don't forget to install heroku CLI)
+heroku buildpacks:add heroku/python -a xxx
+heroku buildpacks:add heroku/jvm -a xxx
+heroku config:set VERIFY_TOKEN=ooo -a xxx
+(ooo can be any string you want)
+
+Go to section "Deploy" and push the code to run the server.
+
+Go to "Resources" pane and add "Heroku Postgres" in Add ons.
+
+
 #### 2. Make a facebook page from facebook.
 #### 3. Setting on Facebook Developer Page 
 Go to facebook developer page and create your account.
+
 https://developers.facebook.com/
 
 Create an app there and go to its dashboard.
 
 From "Product" section, find "Messenger" pane.
 
-Create an page access token by selecting facebook page you want to connect with.
-Then you will get a page access token(You will use this later).
-
-From the "Webhook" section in "Messenger" pane, check "messages" and "messaging_postback" options.
-
-Find "Webhook" section from "Products" on the left menu.
-
-Click on Subscribe and you will see a window requiring 2 values.
-"callback url": This is a url of your heroku app.
-"verify token": This can be any value you want. 
-
-#### 4.Set Heroku environment variables
+Create an page access token by selecting facebook page you created in step 2.
+Then you will get a page access token.
+Then run this code to set it as a heroku env variable.
 heroku config:set PAGE_ACCESS_TOKEN=ooo -a xxx    
-heroku config:set VERIFY_TOKEN=ooo -a xxx
-Set these tokens as heroku env var(Replace xxx with app name and ooo with keys or tokens)
 
-#### 5.Set jvm buildback to use stanford parser
+From the "Webhook" section in "Messenger" pane, click on "Setup webhook" from "Messenger" section. 
+Then you will see a window requiring 2 values.
+"callback url": This is a url of your heroku app.
+"verify token": This is the string you set in the step 1 as "VERIFY_TOKEN". 
+Also check the 'messaging', 'messaging_postback' boxes.
 
-heroku buildpacks:add heroku/jvm -a xxx  
 
-#### 6.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
+#### 5.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
 heroku config:set client_access_token=ooo -a xxx    
 heroku config:set session_id=ooo -a xxx  
 
-#### 7.set database and queue
+#### 6.set database and queue
 heroku addons:create heroku-postgresql:hobby-dev -a xxx  
 heroku addons:create redistogo:nano -a xxx
 

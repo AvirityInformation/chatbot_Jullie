@@ -19,7 +19,6 @@ engine = create_engine(db_url, echo=False)
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)
 
-
 class SessionContext(object):
     def __init__(self, session):
         self.session = session
