@@ -29,7 +29,7 @@ class FeedbackBot(BaseBot):
         if not users:
             return
 
-        response_data = self.create_response(users[0])
+        # response_data = self.create_response(users[0])
 
         for user_id in users:
             self.send_responses(response_data, user_id)
@@ -38,11 +38,11 @@ class FeedbackBot(BaseBot):
 
             print('\n[ASKED COMMENT] User ' + str(user_id))
 
-    def create_response(self, user):
-        response_generator = CCTResponseGeneratorFactory.create(user, None, MessageType.ASK_FEED_BACK.value)
-        response_data = response_generator()
-
-        return response_data
+    # def create_response(self, user):
+    #     response_generator = CCTResponseGeneratorFactory.create(user, None, MessageType.ASK_FEED_BACK.value)
+    #     response_data = response_generator()
+    #
+    #     return response_data
 
     def send_responses(self, response_data, user_id):
         sender_id = models.User.find_sender_id_by_id(user_id)

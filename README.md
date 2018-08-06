@@ -89,6 +89,6 @@ Tables are now created.
 
 #### 7. Send message to your facebook page and get response!
 Don't forget to start three dynos to run all the programs required.
-web, worker and clock
+web, worker and clock   
 
 You can start servers from your heroku app dashboard "Resources" pane.
