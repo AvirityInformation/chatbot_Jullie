@@ -1,1 +1,5 @@
 punkt
+wordnet
+brown
+conll2000
+movie_reviews
