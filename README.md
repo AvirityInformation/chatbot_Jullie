@@ -69,23 +69,13 @@ Select "Create a new Google project" when adding an agent.
 
 Click on the setting icon of the agent and get client access token.
 
-Also you need to get session_id.  
-Put hello in right pane and see "Diagnostic Info".
-You'll find the session_id in the json.  
-
-Then execute following commands to set them to heroku env variables.  
+Then execute following command to set it to heroku env variables.  
 heroku config:set client_access_token=ooo -a xxx    
-heroku config:set session_id=ooo -a xxx  
 
-#### 5.set database and queue
-heroku addons:create heroku-postgresql:hobby-dev -a xxx  
-heroku addons:create redistogo:nano -a xxx
+#### 5.set queue  
+heroku addons:create redistogo:nano -a xxx      
 
-##### 6.check secret keys with heroku config -a xxx
-1. database_url
-2. redistogo_url      
-
-#### 7.Push something to heroku and start dynos.
+#### 6.Push something to heroku and start dynos.
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
 
