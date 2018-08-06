@@ -28,9 +28,10 @@ Jullie replies to users with compassion.
 Make an app on Heroku.
 
 Run this command in terminal(Don't forget to install heroku CLI)
-heroku buildpacks:add heroku/python -a xxx
-heroku buildpacks:add heroku/jvm -a xxx
-heroku config:set VERIFY_TOKEN=ooo -a xxx
+
+heroku buildpacks:add heroku/python -a xxx  
+heroku buildpacks:add heroku/jvm -a xxx  
+heroku config:set VERIFY_TOKEN=ooo -a xxx  
 (ooo can be any string you want)
 
 Go to section "Deploy" and push the code to run the server.
@@ -60,19 +61,19 @@ Then you will see a window requiring 2 values.
 Also check the 'messaging', 'messaging_postback' boxes.
 
 
-#### 5.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
+#### 4.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
 heroku config:set client_access_token=ooo -a xxx    
 heroku config:set session_id=ooo -a xxx  
 
-#### 6.set database and queue
+#### 5.set database and queue
 heroku addons:create heroku-postgresql:hobby-dev -a xxx  
 heroku addons:create redistogo:nano -a xxx
 
-##### 8.check secret keys with heroku config -a xxx
+##### 6.check secret keys with heroku config -a xxx
 1. database_url
 2. redistogo_url      
 
-#### 9.Push something to heroku and start dynos.
+#### 7.Push something to heroku and start dynos.
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
 
