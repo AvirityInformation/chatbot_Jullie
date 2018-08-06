@@ -24,6 +24,7 @@ Jullie replies to users with compassion.
 
 
 # Instruction
+(xxx is the name of the heroku app you create so please replace it before executing commands.)
 #### 1. Make an app on Heroku
 Make an app on Heroku.
 
