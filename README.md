@@ -28,9 +28,10 @@ Jullie replies to users with compassion.
 Make an app on Heroku.
 
 Run this command in terminal(Don't forget to install heroku CLI)
-heroku buildpacks:add heroku/python -a xxx
-heroku buildpacks:add heroku/jvm -a xxx
-heroku config:set VERIFY_TOKEN=ooo -a xxx
+
+heroku buildpacks:add heroku/python -a xxx  
+heroku buildpacks:add heroku/jvm -a xxx  
+heroku config:set VERIFY_TOKEN=ooo -a xxx  
 (ooo can be any string you want)
 
 Go to section "Deploy" and push the code to run the server.
