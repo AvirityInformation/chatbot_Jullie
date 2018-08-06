@@ -55,7 +55,7 @@ class RepeatResponseGenerator(BaseResponseGenerator):
             fixed_df = cls.__replace_word_by_csv(target_df)
 
             # TODO fix the convert_df_to_str() so that it would not need [1:] part.
-            repeat_text = WordFormatter.Df2Str(fixed_df)[1:]
+            repeat_text = WordFormatter.Df2Str(fixed_df)
 
             # TODO here has to be same structure as message_type_filter since
             # TODO one sentence can have "want to" and despising word at the same time.
@@ -111,6 +111,7 @@ class RepeatResponseGenerator(BaseResponseGenerator):
                                                               is_last_sentence=is_last_sentence)
             else:
                 repeat_list += cls.__alter_repeat_for_plain_repeat(repeat_text, idx)
+                print('**************111111************\n' , repeat_list)
 
         return repeat_list
 
@@ -571,7 +572,7 @@ class RepeatResponseGenerator(BaseResponseGenerator):
     @classmethod
     def __alter_repeat_for_keyword(cls, text_df, text_kw_df, idx, repeat, is_last_sentence=False):
         repeat_list = []
-
+        print('********** repeat **********\n', repeat)
         if cls.__is_every_sent_positive(text_df, text_kw_df):
             if idx == 0:
                 repeat_list.append(repeat)
