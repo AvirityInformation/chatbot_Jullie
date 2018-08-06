@@ -27,7 +27,7 @@ Jullie replies to users with compassion.
 #### 1.Make an app on Heroku
 
 
-#### 2.Make a facebook page and get page access token and verify token from facebook developer page. Set these tokens as heroku env var(Replace xxx with app name and ooo with keys or tokens)
+#### 2.Make a facebook page and get page access token from facebook developer page section 'messenger' and set verify token from facebook developer page section 'webhook'. Set these tokens as heroku env var(Replace xxx with app name and ooo with keys or tokens)
 
 heroku config:set PAGE_ACCESS_TOKEN=ooo -a xxx    
 heroku config:set VERIFY_TOKEN=ooo -a xxx
