@@ -78,7 +78,7 @@ heroku config:set session_id=### -a xxx
 heroku addons:create redistogo:nano -a xxx  
 (You'll need to verify the account to install addons)      
 
-#### 6.Send messagae to your facebook page and get response!
+#### 6.Send message to your facebook page and get response!
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
 
