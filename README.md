@@ -59,7 +59,9 @@ From the "Webhook" section in "Messenger" pane, click on "Setup webhook" from "M
 Then you will see a window requiring 2 values.
 "callback url": This is a url of your heroku app.    
 "verify token": This is the string you set in the step 1 as "VERIFY_TOKEN". 
-Also check the 'messaging', 'messaging_postback' boxes.
+Also check the 'messaging', 'messaging_postback' boxes.  
+
+After that, you have to follow the facebook page by selecting the page there.  
 
 
 #### 4.Then create an agent on https://dialogflow.com and set its api keys as heroku env vars.    
@@ -74,11 +76,18 @@ heroku config:set client_access_token=ooo -a xxx
 heroku config:set session_id=### -a xxx  
 (Replace ### with any string)    
 
-#### 5.set queue  
+#### 5. set queue  
 heroku addons:create redistogo:nano -a xxx  
 (You'll need to verify the account to install addons)      
 
-#### 6.Send message to your facebook page and get response!
+#### 6. Setup database
+Execute this command to connect with db.  
+heroku pg:psql -a xxx  
+
+Copy the content of db/first_create.ddl and paste it in the console.  
+Tables are now created.  
+
+#### 7. Send message to your facebook page and get response!
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
 
