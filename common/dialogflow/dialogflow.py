@@ -10,6 +10,7 @@ def request_to_apiai(df):
     try:
         message = WordFormatter.Df2Str(df)
         client_access_token = os.environ.get('client_access_token', None)
+        # session_id is not used.
         session_id = os.environ.get('session_id', None)
         ai = ApiAI(client_access_token)
         request = ai.text_request()
