@@ -75,10 +75,11 @@ heroku config:set session_id=### -a xxx
 (Replace ### with any string)    
 
 #### 5.set queue  
-heroku addons:create redistogo:nano -a xxx      
+heroku addons:create redistogo:nano -a xxx  
+(You'll need to verify the account to install addons)      
 
-#### 6.Push something to heroku and start dynos.
+#### 6.Send messagae to your facebook page and get response!
 Don't forget to start three dynos to run all the programs required.
 web, worker and clock
 
-You can start servers from your heroku app dashboard.
+You can start servers from your heroku app dashboard "Resources" pane.
