@@ -19,8 +19,8 @@ class PosTagger:
 
     @staticmethod
     def __add_basic_pos_tag(df):
-        pos_path_jar = "./stanford-postagger-full-2017-06-09/stanford-postagger.jar"
-        pos_path_model = "./stanford-postagger-full-2017-06-09/models/english-left3words-distsim.tagger"
+        pos_path_jar = "./nlp_library/stanford-postagger-full-2017-06-09/stanford-postagger.jar"
+        pos_path_model = "./nlp_library/stanford-postagger-full-2017-06-09/models/english-left3words-distsim.tagger"
         pos_tagger = StanfordPOSTagger(pos_path_model, pos_path_jar)
 
         pos = [pos_tagger.tag(s) for s in [df.word]]
